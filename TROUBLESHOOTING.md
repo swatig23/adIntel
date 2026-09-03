@@ -136,6 +136,17 @@ lsof -ti:8000 | xargs kill -9
   ```
   If it prints `LocalJsonStore`, check the printed warning above it.
 
+### Before flipping DATA_SOURCE=bq_political, run the pre-flight check
+Don't set `DATA_SOURCE=bq_political` blind. Run this first:
+```bash
+.venv/bin/python scripts/test_bigquery_connection.py
+```
+It checks, in order: config is set, auth works, the LIVE table schema
+matches what the code expects (this was written from docs, never
+verified live -- schemas drift), and finally runs one real sample
+query. Fixes exactly what's wrong instead of guessing from a raw
+BigQuery stack trace.
+
 ### BigQuery query fails: "403 Access Denied" or "billing not enabled"
 - BQ Sandbox mode has limits on some operations. If this happens:
   1. Confirm `gcloud auth application-default login` was run
