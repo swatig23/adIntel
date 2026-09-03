@@ -18,9 +18,9 @@ class Settings(BaseSettings):
 
     # Google AI
     google_api_key: str = ""
-    gemini_text_model: str = "gemini-2.5-flash"
-    gemini_vision_model: str = "gemini-2.5-flash"
-    gemini_image_model: str = "gemini-2.5-flash-image-preview"
+    gemini_text_model: str = "gemini-3.5-flash"
+    gemini_vision_model: str = "gemini-3.5-flash"
+    gemini_image_model: str = "gemini-2.5-flash-image"
 
     # Meta Ad Library
     meta_access_token: str = ""

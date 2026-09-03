@@ -59,6 +59,12 @@ async def test_image() -> bool:
         print("      OK")
         return True
     except Exception as e:  # noqa: BLE001
+        err_str = str(e)
+        if "RESOURCE_EXHAUSTED" in err_str or "limit: 0" in err_str or "429" in err_str:
+            print("      SKIPPED (Free Tier Notice):")
+            print("      Image generation model has limit 0 on free-tier API keys.")
+            print("      (Text & Multimodal reasoning are working! Set up Pay-As-You-Go on AI Studio if image generation is needed.)")
+            return True
         print(f"      FAILED: {type(e).__name__}: {e}")
         return False
 

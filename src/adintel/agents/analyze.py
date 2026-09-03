@@ -49,7 +49,7 @@ Here are the winning ads (copy shown; images attached where available):
 
 
 class AnalyzeAgent:
-    def __init__(self, max_images: int = 12, top_k_patterns: int = 6):
+    def __init__(self, max_images: int = 3, top_k_patterns: int = 6):
         self.max_images = max_images
         self.top_k_patterns = top_k_patterns
 
@@ -72,7 +72,13 @@ class AnalyzeAgent:
         )
 
         if image_urls:
-            raw = await generate_from_multimodal(prompt, image_urls, system=SYSTEM_PROMPT)
+            try:
+                raw = await generate_from_multimodal(prompt, image_urls, system=SYSTEM_PROMPT)
+            except Exception as e:
+                logger.warning(
+                    f"[AnalyzeAgent] Multimodal call unavailable ({e}); falling back to text copy analysis"
+                )
+                raw = await generate_text(prompt, system=SYSTEM_PROMPT)
         else:
             raw = await generate_text(prompt, system=SYSTEM_PROMPT)
 

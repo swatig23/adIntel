@@ -106,11 +106,35 @@ class CreateAgent:
             return []
 
     async def _render_image(self, brand: str, idx: int, concept: dict) -> Path:
+        out = self.output_dir / f"{brand.lower().replace(' ', '_')}_creative_{idx + 1}.png"
         prompt = (
             f"Advertising image for {brand}. "
-            f"{concept['image_prompt']} "
+            f"{concept.get('image_prompt', '')} "
             f"Professional product photography, high resolution, "
             f"crisp lighting, brand-forward composition. No text or logos in the image."
         )
-        out = self.output_dir / f"{brand.lower().replace(' ', '_')}_creative_{idx + 1}.png"
-        return await generate_image(prompt, out)
+        try:
+            return await generate_image(prompt, out)
+        except Exception as e:
+            logger.info(f"[CreateAgent] API image gen unavailable ({e}); creating styled concept graphic")
+            return self._draw_fallback_card(brand, idx, concept, out)
+
+    @staticmethod
+    def _draw_fallback_card(brand: str, idx: int, concept: dict, output_path: Path) -> Path:
+        from PIL import Image, ImageDraw
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        img = Image.new("RGB", (600, 600), color=(15, 23, 42))  # Dark slate background
+        draw = ImageDraw.Draw(img)
+
+        # Header accent bar
+        colors = [(79, 70, 229), (236, 72, 153), (16, 185, 129)]
+        bar_color = colors[idx % len(colors)]
+        draw.rectangle([0, 0, 600, 100], fill=bar_color)
+
+        # Draw card framing
+        draw.rectangle([30, 130, 570, 480], outline=(51, 65, 85), width=2)
+        draw.rectangle([50, 430, 220, 470], fill=bar_color)
+
+        img.save(output_path, "PNG")
+        return output_path

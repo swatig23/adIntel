@@ -60,8 +60,9 @@ store = get_store()
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "using_stub": settings.use_meta_stub},
+        request=request,
+        name="index.html",
+        context={"using_stub": settings.use_meta_stub},
     )
 
 
@@ -89,7 +90,10 @@ async def analyze(
     except Exception as e:  # noqa: BLE001
         logger.exception("Pipeline failed")
         return templates.TemplateResponse(
-            "error.html", {"request": request, "error": str(e)}, status_code=500
+            request=request,
+            name="error.html",
+            context={"error": str(e)},
+            status_code=500,
         )
 
     # Persist for history / sharing
@@ -100,8 +104,9 @@ async def analyze(
         report_id = None
 
     return templates.TemplateResponse(
-        "report.html",
-        {"request": request, "report": report, "report_id": report_id},
+        request=request,
+        name="report.html",
+        context={"report": report, "report_id": report_id},
     )
 
 
@@ -131,7 +136,9 @@ async def healthz():
 async def history(request: Request):
     rows = store.list_recent(limit=25)
     return templates.TemplateResponse(
-        "history.html", {"request": request, "rows": rows}
+        request=request,
+        name="history.html",
+        context={"rows": rows},
     )
 
 
@@ -141,6 +148,7 @@ async def view_report(request: Request, report_id: str):
     if not report:
         raise HTTPException(404, f"Report {report_id} not found")
     return templates.TemplateResponse(
-        "report_page.html",
-        {"request": request, "report": report, "report_id": report_id},
+        request=request,
+        name="report_page.html",
+        context={"report": report, "report_id": report_id},
     )
