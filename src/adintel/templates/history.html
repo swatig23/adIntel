@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AdIntel - History</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: 'Inter', system-ui, sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+<div class="max-w-4xl mx-auto px-6 py-10">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-bold text-slate-900">Analysis History</h1>
+    <a href="/" class="text-indigo-600 hover:underline">New analysis</a>
+  </div>
+
+  {% if not rows %}
+    <div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">
+      No analyses yet. Run one from the <a href="/" class="text-indigo-600 hover:underline">home page</a>.
+    </div>
+  {% else %}
+    <div class="space-y-3">
+      {% for row in rows %}
+      <a href="/report/{{ row.id }}" class="block bg-white rounded-lg border border-slate-200 p-5 hover:border-indigo-400 hover:shadow-sm transition">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="font-semibold text-slate-900">{{ row.brand }}</div>
+            <div class="text-sm text-slate-500 mt-1">vs {{ row.competitors | join(", ") }}</div>
+          </div>
+          <div class="text-xs text-slate-400 whitespace-nowrap ml-4">{{ row.saved_at or "" }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+</body>
+</html>

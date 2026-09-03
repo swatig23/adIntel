@@ -1,0 +1,43 @@
+# Env
+.env
+.env.local
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+wheels/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# uv
+.uv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# App state
+data/
+outputs/
+generated_creatives/
+*.log
+
+# PII / creds — NEVER commit
+service-account*.json
+gcp-key*.json
+firebase-admin*.json
