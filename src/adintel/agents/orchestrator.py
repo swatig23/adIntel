@@ -48,19 +48,25 @@ class Orchestrator:
         logger.info("[Orchestrator] calling AnalyzeAgent...")
         patterns = await self.analyze.run(winners)
 
-        # 4 & 5. Gap & Create — run concurrently after patterns are extracted (LLM calls in parallel)
-        logger.info("[Orchestrator] running GapAgent and CreateAgent concurrently...")
-        gap_coro = self.gap.run(user_competitor.ads, patterns)
+        # Brief 2s pause between LLM calls
+        await asyncio.sleep(2)
+
+        # 4. Gap — compare user's ads vs patterns (LLM call)
+        logger.info("[Orchestrator] calling GapAgent...")
+        gaps = await self.gap.run(user_competitor.ads, patterns)
+
+        await asyncio.sleep(2)
+
+        # 5. Create — new creatives (optional, gated by request flag; LLM call)
+        creatives = []
         if request.generate_creatives:
-            create_coro = self.create.run(
+            logger.info("[Orchestrator] calling CreateAgent...")
+            creatives = await self.create.run(
                 brand=request.user_brand,
                 industry=request.industry_hint or "consumer",
                 patterns=patterns,
             )
-            gaps, creatives = await asyncio.gather(gap_coro, create_coro)
-        else:
-            gaps = await gap_coro
-            creatives = []
+            await asyncio.sleep(2)
 
         # 6. Report — narrative summary (LLM call)
         logger.info("[Orchestrator] calling ReportAgent...")

@@ -307,8 +307,9 @@ AdIntel uses a pluggable data source controlled by the `DATA_SOURCE` env var:
 |---|---|---|
 | `meta_stub` (default) | Deterministic synthetic ads via seeded random | Now (fallback for zero-setup) |
 | `bq_political` | Queries `bigquery-public-data.google_political_ads` via BigQuery | Overnight build, live tomorrow AM once user provides `GCP_PROJECT_ID` |
-| `meta_live` | Meta Ad Library v18 API | Code written, live whenever user gets a Meta token |
-| `bq_kaggle` | Queries a user-owned BQ dataset loaded from Kaggle | Post-hackathon commercial swap |
+| `meta_live` | Meta Ad Library v18 API | Code written, blocked on Meta Ad Library ID/location verification (1-3 day approval) |
+| `bq_kaggle` | Queries a user-owned BQ dataset loaded from Kaggle, tolerant generic column-name mapper | Post-hackathon commercial swap |
+| `bq_kaggle_transcripts` | Queries a user-owned BQ dataset loaded from the "Advertisement Transcripts from Various Industries" Kaggle dataset (kevinhartman0), exact schema mapper (`Category`/`Advertiser`/`Product_or_spot`/`Ad_copy`) | **2026-09-04**: real commercial ad copy, 1936 rows, 1348 distinct brands (BMW, Audi, 7up, etc.). No delivery dates -- requires `BQ_SKIP_LONGEVITY_FILTER=true` so `LongevityAgent` treats every ad as a winner instead of date-filtering an empty result. |
 
 All backends return identical `list[Ad]` so downstream agents don't change.
 

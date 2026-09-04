@@ -46,7 +46,7 @@ from .report import ReportAgent
 # Free-tier Gemini rate limits (~5 RPM) mean back-to-back LLM-calling nodes
 # need a breather between them. Keep this in sync with the equivalent pause
 # in orchestrator.py -- if you tune one, tune the other.
-INTER_STAGE_PAUSE_SECONDS = 0.5
+INTER_STAGE_PAUSE_SECONDS = 2
 
 # Keep these in sync with Orchestrator's agent construction args -- both
 # were tuned down from higher defaults to respect free-tier quota limits.

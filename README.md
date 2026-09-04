@@ -1,171 +1,171 @@
 # AdIntel
 
-**Competitor Ad Library Copilot for SMBs.**  
-Learn from your competitors' proven-winner ads, extract cross-ad strategies, and generate fresh winning creative concepts.
+**Competitor Ad Library Copilot for SMBs.**
+Learn from your competitors' proven-winner ads, then generate fresh creatives
+that mimic what actually works.
 
-Built for the Google Hackathon. Uses **Google ADK** (`google.adk`), **Gemini 3.5 / Flash** (long context + vision), **Nano Banana** (Gemini Flash Image) with 1ms PIL card fallback for creative rendering, and **BigQuery / Meta Ad Library** for competitive data ingestion.
+Built for the Google hackathon. Uses **Gemini 2.5** (long context + vision),
+**Nano Banana** (Gemini 2.5 Flash Image) for creative generation,
+**Meta Ad Library API** for live competitor data, and a multi-agent pipeline
+inspired by **Google ADK**.
 
 ---
 
-## The Pitch
+## The pitch
 
-Small businesses spend $500–$5,000/month on Meta & Google ads and burn 80% of budget on bad creative. Existing competitive-intel tools (AdSpy, Anstrex, PowerAdSpy — all $99–$297/mo) are static dashboards with zero AI reasoning.
+Small businesses spend $500-5,000/mo on Meta/Google ads and burn 80% of
+budget on bad creative. Existing competitive-intel tools (AdSpy, Anstrex,
+PowerAdSpy — all $99-297/mo) are ugly dashboards with zero AI.
 
-**AdIntel**:
-1. **Ingests** competitor ads via Meta Ad Library API, BigQuery public datasets, or deterministic stub mode.
-2. **Flags "proven winners"** — ads active for 90+ days in Meta's auction.
-3. **Extracts cross-ad patterns** using **Gemini 3.5 Flash** (long-context vision + text) across all winning ads in one pass.
-4. **Spotlights strategic gaps** comparing your brand's active ads against competitor winning patterns.
-5. **Generates fresh ad concepts** with **Nano Banana** (Gemini Flash Image) and instant PIL card fallback rendering.
-6. **Writes CMO-level executive summaries** for immediate action.
+AdIntel:
+
+1. Pulls every active ad your competitors are running (Meta Ad Library API)
+2. Flags "proven winners" — ads Meta's auction has kept alive 90+ days
+3. Uses **Gemini 2.5 long context + vision** to extract recurring patterns
+   across dozens of winning ads in one shot
+4. Compares your ads against those patterns; produces prioritized gaps
+5. Generates 3 fresh creatives with **Nano Banana**, informed by the patterns
+
+You get a full competitive report + ready-to-run ads in ~60 seconds.
 
 ---
 
 ## Architecture
 
 ```
-                 Web UI (FastAPI + HTMX + Tailwind)
-                                 │
-                                 ▼
-                     Google ADK SequentialAgent
-  ┌───────────────┬──────────────┼───────────────┬───────────────┬──────────────┐
-  │               │              │               │               │              │
-  ▼               ▼              ▼               ▼               ▼              ▼
-IngestAgent LongevityAgent AnalyzeAgent      GapAgent       CreateAgent    ReportAgent
-  │               │              │               │               │              │
-  ▼               ▼              ▼               ▼               ▼              ▼
-Meta Ad Lib   Pure Python    Gemini 3.5      Gemini 3.5      Nano Banana    Gemini 3.5
-/ BigQuery   Winner Filter  Vision/Text     (Parallel Gap)  / PIL Card     Exec Summary
+        Web UI (HTMX + Tailwind)
+                |
+                v
+        FastAPI on Cloud Run
+                |
+                v
+        Orchestrator
+    ____________|_______________________________
+   /       /        |          |         \      \
+  v       v         v          v          v      v
+Ingest Longevity Analyze   Gap        Create  Report
+Agent  Agent     Agent     Agent      Agent   Agent
+  |               |         |          |        |
+  v               v         v          v        v
+Meta         Gemini     Gemini      Nano       Gemini
+Ad Lib       2.5        2.5         Banana     2.5
+API          (vision +  (text)      (image     (text)
+             long ctx)              gen)
 ```
 
-Each agent is modularly wrapped as a `google.adk.agents.BaseAgent` inside [`adk_pipeline.py`](file:///Users/shawttygarg/Documents/Projects/adIntel/src/adintel/agents/adk_pipeline.py). The FastAPI app routes requests through ADK (`ADK_ENABLED=true`), with an instant fallback to the functional [`orchestrator.py`](file:///Users/shawttygarg/Documents/Projects/adIntel/src/adintel/agents/orchestrator.py).
+Each agent lives in its own file under `src/adintel/agents/` and does one
+job well. The Orchestrator wires them into a sequential pipeline.
 
 ---
 
-## Quick Start & Running the Application
+## Quick start
 
 ### 1. Prerequisites
-- Python 3.11+ (Python 3.12 recommended)
-- [`uv`](https://docs.astral.sh/uv/) for high-speed package management
-- A **Google AI Studio** API key (free): [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-- *(Optional)* Google Cloud Project ID for BigQuery (`DATA_SOURCE=bq_political`) or Firestore persistence.
 
-### 2. Installation & Configuration
+- Python 3.11+
+- [`uv`](https://docs.astral.sh/uv/) for dependency management
+- A **Google AI Studio** API key (free): https://aistudio.google.com/apikey
+- *(Optional)* A Meta App with `ads_read` scope for live competitor data.
+  Without it the app runs in **stub mode** with realistic synthetic data.
+
+### 2. Install
 
 ```bash
-# 1. Clone & enter directory
 cd adintel
-
-# 2. Create virtual environment & sync dependencies with uv
-uv venv --python 3.12
-uv sync
-
-# 3. Create .env file from template
+uv sync --index-url https://pypi.ci.artifacts.walmart.com/artifactory/api/pypi/external-pypi/simple --allow-insecure-host pypi.ci.artifacts.walmart.com
 cp .env.example .env
+# then edit .env and paste your GOOGLE_API_KEY
 ```
 
-Open `.env` in your text editor and set your key:
-```env
-GOOGLE_API_KEY=AIzaSy...             # required: from Google AI Studio
-DATA_SOURCE=meta_stub                # options: meta_stub | bq_political | meta_live
-ADK_ENABLED=true                     # true to route via Google ADK SequentialAgent
-```
+### 3. Run
 
-### 3. Verify Gemini Connectivity & Run Tests
-
-Run the standalone Gemini connectivity check to verify your API key:
 ```bash
-uv run python scripts/test_gemini_connection.py
+uv run uvicorn adintel.main:app --reload --port 8000
+# then open http://localhost:8000
 ```
 
-Run the pytest test suite (10 unit & pipeline assembly tests):
-```bash
-uv run pytest tests/ -v
-```
+### 4. (Later) Switch to live Meta data
 
-### 4. Boot the Web Application
-
-Start the FastAPI application with `uvicorn`:
-```bash
-PYTHONPATH=src uv run python -m uvicorn adintel.main:app --reload --port 8000
-```
-
-1. Open **[http://localhost:8000](http://localhost:8000)** in your browser.
-2. Enter your brand name (e.g. `Warby Parker`) and competitors (e.g. `Ray-Ban, Zenni Optical`).
-3. Click **Analyze Competitors**.
-4. Check system status and backends live at **[http://localhost:8000/healthz](http://localhost:8000/healthz)**.
+Get a Meta access token with `ads_read` scope:
+1. Go to https://developers.facebook.com/apps and create an app
+2. Add "Ad Library API" product
+3. Generate a user access token with `ads_read` scope
+4. Paste into `.env` as `META_ACCESS_TOKEN`
+5. Set `USE_META_STUB=false`
 
 ---
 
-## Data Source Switching
-
-AdIntel supports three data ingestion backends configured via `DATA_SOURCE` in `.env`:
-
-- **`meta_stub` (Default)**: Deterministic, realistic synthetic competitor ads with varied hooks, CTAs, and delivery windows. No external ad keys needed.
-- **`bq_political`**: Queries Google BigQuery public political ads datasets (`bigquery-public-data.google_political_ads.creative_stats`). Requires `gcloud auth application-default login`.
-- **`meta_live`**: Connects directly to the Meta Ad Library Graph API v18. Requires `META_ACCESS_TOKEN`.
-
----
-
-## Project Layout
+## Project layout
 
 ```
 adintel/
-├── pyproject.toml
-├── .env.example
-├── README.md
-├── src/adintel/
-│   ├── main.py               <- FastAPI entry point & HTMX routes
-│   ├── config.py             <- pydantic-settings configuration
-│   ├── models.py             <- Ad, Competitor, Pattern, GapItem, GeneratedCreative
-│   ├── storage.py            <- LocalJsonStore & FirestoreStore backends
-│   ├── clients/
-│   │   ├── gemini.py         <- GenAI SDK wrapper (text, vision, structured json, image)
-│   │   ├── ads.py            <- Multi-source ad dispatcher
-│   │   ├── bq_ads.py         <- BigQuery ads client & mappers
-│   │   └── meta_ads.py       <- Meta Ad Library API client
-│   ├── agents/
-│   │   ├── ingest.py         <- Multi-brand ad ingestion
-│   │   ├── longevity.py      <- Pure Python 90-day winner filter
-│   │   ├── analyze.py        <- Long-context vision pattern extraction
-│   │   ├── gap.py            <- Competitor pattern vs user gap analysis
-│   │   ├── create.py         <- Nano Banana concept & PIL fallback card renderer
-│   │   ├── report.py         <- Executive summary CMO writer
-│   │   ├── orchestrator.py   <- Parallel functional pipeline
-│   │   └── adk_pipeline.py   <- Google ADK SequentialAgent pipeline
-│   ├── templates/            <- HTMX & Jinja2 HTML templates
-│   └── static/               <- Web assets
-├── scripts/
-│   ├── test_gemini_connection.py
-│   └── test_bigquery_connection.py
-├── tests/
-│   ├── test_smoke.py         <- Pipeline wiring & ADK assembly tests
-│   └── test_bq_ads.py        <- BigQuery row mapping tests
-└── generated_creatives/      <- Generated PNG creative cards
+  pyproject.toml
+  .env.example
+  README.md
+  src/adintel/
+    __init__.py
+    main.py               <- FastAPI app
+    config.py             <- pydantic-settings
+    models.py             <- Ad, Competitor, Pattern, GapItem, ...
+    clients/
+      meta_ads.py         <- Meta Ad Library API (live + stub)
+      gemini.py           <- google-genai wrapper (text/vision/image)
+    agents/
+      __init__.py
+      ingest.py           <- fetch competitor ads
+      longevity.py        <- flag proven winners
+      analyze.py          <- extract patterns (Gemini long-ctx + vision)
+      gap.py              <- compare user vs winners
+      create.py           <- generate creatives (Nano Banana)
+      report.py           <- executive summary
+      orchestrator.py     <- sequential pipeline
+    templates/
+      index.html          <- landing + form
+      report.html         <- HTMX partial with results
+      error.html
+  tests/
+    test_smoke.py         <- pipeline wiring without touching Gemini
+  generated_creatives/    <- output PNGs (gitignored)
 ```
 
 ---
 
-## Google Tech Stack
+## Google tech used
 
-| Component               | Google Tech / Service                                  |
-|-------------------------|--------------------------------------------------------|
-| Agent Framework         | **Google ADK** (`google.adk.agents.SequentialAgent`)  |
-| LLM & Vision Reasoning  | **Gemini 3.5 Flash** (long context + vision)          |
-| Multimodal Extraction   | **Gemini 3.5 Flash** (`generate_from_multimodal`)     |
-| Image Generation        | **Gemini Flash Image** ("Nano Banana") + PIL fallback |
-| Structured Output       | `response_mime_type="application/json"` in GenAI SDK   |
-| Public Data Ingestion   | **Google BigQuery** (`google-cloud-bigquery`)          |
-| Cloud Storage / State   | **Google Cloud Firestore** (`google-cloud-firestore`)  |
-| Compute Target          | **GCP Cloud Run**                                      |
+| Layer                    | Service                                    |
+|--------------------------|--------------------------------------------|
+| LLM reasoning            | Gemini 2.5 Flash (long context)            |
+| Multimodal analysis      | Gemini 2.5 Flash (vision on ad creatives)  |
+| Image generation         | Gemini 2.5 Flash Image (Nano Banana)       |
+| Agent orchestration      | Custom sequential (ADK-swappable)          |
+| Serverless compute       | Cloud Run                                  |
+| State (optional)         | Firestore                                  |
+| Creative storage         | Firebase Storage                           |
 
 ---
 
-## Demo Walkthrough Script (3 minutes)
+## Demo script (3 minutes)
 
-1. **0:00–0:20** — **Problem**: SMBs burn 80% of Meta ad spend on ineffective creative.
-2. **0:20–0:40** — **Input**: Enter brand `Warby Parker` vs competitors `Ray-Ban, Zenni Optical`.
-3. **0:40–1:20** — **Pattern Mining**: Watch Gemini analyze 50 competitor ads in parallel, filtering 13 proven winners running 90+ days.
-4. **1:20–2:10** — **Gaps**: Review prioritized recommendations (e.g. "Competitors use social-proof question hooks in 70% of winning ads; your ads lack this").
-5. **2:10–2:50** — **Creatives**: View ready-to-run concepts with generated image assets and copy rationale.
-6. **2:50–3:00** — **Architecture**: Multi-agent design powered by Google ADK & Gemini.
+1. **0:00-0:20** — Problem: SMBs bleed cash on bad ads. Show a fake bad ad.
+2. **0:20-0:40** — Open AdIntel. Type in "Warby Parker" as your brand,
+   "Ray-Ban, Zenni Optical, GlassesUSA" as competitors.
+3. **0:40-1:20** — Show the report loading: 75 ads analyzed, 22 winners
+   flagged, patterns extracted by Gemini long-context.
+4. **1:20-2:10** — Walk through the extracted patterns and the priority
+   gaps. Highlight one specific insight: "top 3 winning ads all open
+   with a rhetorical question in the first 8 words. You don't."
+5. **2:10-2:50** — Scroll to 3 generated creatives. Emphasize: these were
+   generated by Nano Banana, guided by the patterns, in 20 seconds.
+6. **2:50-3:00** — Close: "This costs $299/mo elsewhere. AdIntel does it
+   better and generates the creatives too."
+
+---
+
+## What to build next (post-hackathon)
+
+- ADK wrapper around agents (SequentialAgent for tracing)
+- MCP Toolbox for Databases to store historical winner tracking in BigQuery
+- Google Ads Transparency Center + TikTok Ad Library ingestion
+- Video ad generation via Veo
+- Automatic A/B test setup via Meta Marketing API
+- Slack/WhatsApp notifications when a competitor launches a new ad

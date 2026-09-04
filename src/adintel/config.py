@@ -26,14 +26,21 @@ class Settings(BaseSettings):
     meta_access_token: str = ""
     use_meta_stub: bool = True
 
-    # Data source dispatcher — controls IngestAgent backend selection.
-    # Valid values: "meta_stub" | "bq_political" | "meta_live" | "bq_kaggle"
+    # Data source dispatcher -- controls IngestAgent backend selection.
+    # Valid values: "meta_stub" | "bq_political" | "meta_live" | "bq_kaggle" | "bq_kaggle_transcripts"
     data_source: str = "meta_stub"
 
     # BigQuery tables (used when data_source is bq_*).
     bq_political_table: str = "bigquery-public-data.google_political_ads.creative_stats"
     bq_kaggle_table: str = ""
     bq_limit_per_brand: int = 50
+
+    # Set True when the configured data source has no ad delivery dates
+    # (e.g. bq_kaggle_transcripts -- a curated "one notable ad per brand"
+    # dataset with no start/stop timestamps). When True, LongevityAgent
+    # treats every fetched ad as a winner instead of filtering by
+    # days_running, since there's no time-based signal to filter on.
+    bq_skip_longevity_filter: bool = False
 
     # GCP / Firebase (optional in MVP)
     gcp_project_id: str = ""

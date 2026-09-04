@@ -86,23 +86,13 @@ def _call_with_retry(call_fn, primary_model: str, label: str = "Gemini"):
     raise last_err or RuntimeError("All candidate Gemini models busy")
 
 
-async def generate_text(
-    prompt: str,
-    *,
-    system: Optional[str] = None,
-    json_mode: bool = False,
-) -> str:
+async def generate_text(prompt: str, *, system: Optional[str] = None) -> str:
     """One-shot text generation with Gemini."""
     settings = get_settings()
     client = _get_client()
 
     def _call(model_name: str) -> str:
-        mime_type = "application/json" if json_mode else None
-        cfg = genai_types.GenerateContentConfig(
-            system_instruction=system,
-            response_mime_type=mime_type,
-            automatic_function_calling=genai_types.AutomaticFunctionCallingConfig(disable=True),
-        )
+        cfg = genai_types.GenerateContentConfig(system_instruction=system) if system else None
         resp = client.models.generate_content(
             model=model_name,
             contents=prompt,
@@ -120,7 +110,6 @@ async def generate_from_multimodal(
     image_urls: list[str],
     *,
     system: Optional[str] = None,
-    json_mode: bool = False,
 ) -> str:
     """Text generation grounded in one or more image URLs."""
     import httpx
@@ -152,12 +141,7 @@ async def generate_from_multimodal(
         )
 
     def _call(model_name: str) -> str:
-        mime_type = "application/json" if json_mode else None
-        cfg = genai_types.GenerateContentConfig(
-            system_instruction=system,
-            response_mime_type=mime_type,
-            automatic_function_calling=genai_types.AutomaticFunctionCallingConfig(disable=True),
-        )
+        cfg = genai_types.GenerateContentConfig(system_instruction=system) if system else None
         resp = client.models.generate_content(
             model=model_name,
             contents=parts,
@@ -170,11 +154,10 @@ async def generate_from_multimodal(
     )
 
 
-async def generate_image(prompt: str, output_path: Path, timeout: float = 6.0) -> Path:
+async def generate_image(prompt: str, output_path: Path) -> Path:
     """Generate an image via Gemini Flash Image ('Nano Banana').
 
     Writes PNG bytes to ``output_path`` and returns the path.
-    Times out after ``timeout`` seconds if quota/network blocks.
     """
     settings = get_settings()
     client = _get_client()
@@ -192,13 +175,9 @@ async def generate_image(prompt: str, output_path: Path, timeout: float = 6.0) -
                     return inline.data
         raise RuntimeError("Gemini did not return any image bytes")
 
-    # Image generation on free tier is limit 0; attempt once with timeout
-    try:
-        data = await asyncio.wait_for(asyncio.to_thread(_call), timeout=timeout)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_bytes(data)
-        logger.info(f"Wrote generated image → {output_path}")
-        return output_path
-    except Exception as e:
-        logger.warning(f"Image generation timed out or failed ({e}); fallback expected.")
-        raise
+    # Image generation on free tier is limit 0; attempt once without long retry loops
+    data = await asyncio.to_thread(_call)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(data)
+    logger.info(f"Wrote generated image → {output_path}")
+    return output_path
