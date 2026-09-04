@@ -28,6 +28,7 @@ load_dotenv()
 from .agents.adk_pipeline import run_via_adk  # noqa: E402
 from .agents.orchestrator import Orchestrator  # noqa: E402
 from .config import get_settings  # noqa: E402
+from .markdown_lite import render_report_markdown  # noqa: E402
 from .models import AnalysisRequest  # noqa: E402
 from .storage import get_store  # noqa: E402
 
@@ -47,6 +48,7 @@ CREATIVE_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="AdIntel", version="0.1.0")
 templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
+templates.env.filters["report_md"] = render_report_markdown
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 orchestrator = Orchestrator(creative_output_dir=CREATIVE_DIR)

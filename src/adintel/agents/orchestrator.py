@@ -75,6 +75,7 @@ class Orchestrator:
             competitors=competitors,
             patterns=patterns,
             gaps=gaps,
+            winner_count=len(winners),
         )
 
         logger.info("[Orchestrator] done")
@@ -85,4 +86,5 @@ class Orchestrator:
             gaps=gaps,
             generated_creatives=creatives,
             executive_summary=summary,
+            winner_ad_ids=[a.id for a in winners],
         )

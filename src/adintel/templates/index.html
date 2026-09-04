@@ -6,38 +6,58 @@
   <title>AdIntel — Competitor Ad Copilot</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
+    :root {
+      --paper: #faf7f0;
+      --paper-line: #e4ddc9;
+      --ink: #1c1a17;
+      --ink-soft: #57534a;
+      --accent: #7a2e2e;
+      --accent-soft: #f1e4e0;
+    }
+    body {
+      font-family: 'Source Sans 3', system-ui, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    .font-serif { font-family: 'Playfair Display', Georgia, serif; }
 
-    .gradient-text {
-      background: linear-gradient(90deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .rule { border-top: 1px solid var(--paper-line); }
+    .rule-thick { border-top: 3px solid var(--ink); }
+
+    /* Underline-style inputs, editorial feel instead of boxed pills */
+    .field-input {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid var(--paper-line);
+      border-radius: 0;
+      padding: 0.65rem 0.1rem;
+      transition: border-color 0.15s ease;
+      color: var(--ink);
+    }
+    .field-input:focus {
+      outline: none;
+      border-bottom-color: var(--accent);
     }
 
-    /* Ambient blurred blobs behind the hero for depth, not flatness */
-    .bg-blob {
-      position: absolute;
-      border-radius: 9999px;
-      filter: blur(80px);
-      opacity: 0.35;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    /* Submit button: real "pressed" feedback on click, not just opacity fade */
+    /* Submit button: real pressed feedback, small-caps editorial tone */
     .submit-btn {
-      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+      background: var(--ink);
+      color: var(--paper);
+      letter-spacing: 0.08em;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
     }
+    .submit-btn:hover { background: var(--accent); }
     .submit-btn:active {
       transform: scale(0.97) translateY(1px);
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
-    .htmx-request.submit-btn,
-    .htmx-request .submit-btn {
+    .htmx-request .submit-btn,
+    .submit-btn.htmx-request {
       pointer-events: none;
-      filter: saturate(0.85);
+      opacity: 0.85;
     }
 
     .btn-idle { display: inline-flex; }
@@ -45,23 +65,19 @@
     .btn-loading { display: none; }
     .htmx-request .btn-loading { display: flex; }
 
-    /* Progress overlay: hidden by default, shown during the HTMX request */
     #progress-overlay { display: none; }
-    .htmx-request ~ #progress-overlay,
-    form.htmx-request + #progress-overlay {
+    .htmx-request ~ #progress-overlay {
       display: block;
     }
 
     @keyframes stageGlow {
-      0%, 100% { opacity: 0.4; }
+      0%, 100% { opacity: 0.35; }
       50% { opacity: 1; }
     }
-    .stage-active .stage-dot {
-      animation: stageGlow 1.4s ease-in-out infinite;
-    }
-    .stage-active .stage-label { color: #4f46e5; font-weight: 700; }
-    .stage-done .stage-dot { background: #10b981 !important; }
-    .stage-done .stage-label { color: #059669; }
+    .stage-active .stage-dot { animation: stageGlow 1.4s ease-in-out infinite; background: var(--accent) !important; }
+    .stage-active .stage-label { color: var(--accent); font-weight: 700; }
+    .stage-done .stage-dot { background: var(--ink) !important; }
+    .stage-done .stage-label { color: var(--ink-soft); }
 
     @keyframes barSlide {
       0% { width: 6%; }
@@ -72,46 +88,29 @@
       92% { width: 92%; }
       100% { width: 96%; }
     }
-    .progress-fill {
-      animation: barSlide 65s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
-    }
-
-    @keyframes bounce-in {
-      0% { transform: scale(0.9); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    #progress-overlay.htmx-request-visible {
-      animation: bounce-in 0.3s ease-out;
-    }
+    .progress-fill { animation: barSlide 65s cubic-bezier(0.2, 0.6, 0.4, 1) forwards; }
   </style>
 </head>
-<body class="bg-gradient-to-b from-slate-50 to-indigo-50/40 min-h-screen">
+<body class="min-h-screen">
 
-<div class="max-w-5xl mx-auto px-6 py-10 relative">
+<div class="max-w-3xl mx-auto px-6 py-14">
 
-  <div class="bg-blob w-96 h-96 bg-indigo-400 -top-20 -left-20"></div>
-  <div class="bg-blob w-96 h-96 bg-pink-400 top-10 right-0"></div>
-
-  <!-- Header -->
-  <header class="mb-10 relative z-10">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 via-pink-500 to-amber-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-        </svg>
-      </div>
-      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">AdIntel</h1>
-      {% if using_stub %}
-      <span class="ml-auto text-xs px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 font-semibold border border-amber-200">
-        DEMO MODE &middot; using stubbed Meta data
-      </span>
-      {% endif %}
-    </div>
-    <p class="text-lg text-slate-600 max-w-2xl leading-relaxed">
-      Competitor ad-library copilot. Learn from your competitors' <span class="gradient-text font-semibold">proven winners</span>,
-      then generate fresh creatives that mimic what works.
+  <!-- Masthead -->
+  <header class="mb-12 text-center">
+    <p class="text-xs tracking-[0.3em] uppercase text-[var(--ink-soft)] mb-3">Competitor Ad Intelligence</p>
+    <h1 class="font-serif text-6xl font-bold tracking-tight mb-4">AdIntel</h1>
+    <div class="w-16 h-[3px] bg-[var(--accent)] mx-auto mb-5"></div>
+    <p class="text-lg text-[var(--ink-soft)] max-w-xl mx-auto leading-relaxed italic">
+      Learn from your competitors' proven winners, then generate fresh creatives that mimic what works.
     </p>
+    {% if using_stub %}
+    <p class="mt-4 inline-block text-xs px-3 py-1 border border-[var(--paper-line)] uppercase tracking-wider text-[var(--ink-soft)]">
+      Demo mode &middot; stubbed Meta data
+    </p>
+    {% endif %}
   </header>
+
+  <div class="rule-thick mb-10"></div>
 
   <!-- Form -->
   <form
@@ -120,123 +119,125 @@
     hx-swap="innerHTML"
     hx-indicator="#progress-overlay"
     hx-disabled-elt="#submit-btn"
-    class="relative z-10 bg-white/90 backdrop-blur rounded-2xl shadow-xl shadow-indigo-900/5 border border-slate-200 p-8 mb-8"
+    class="mb-14"
   >
-    <div class="grid grid-cols-1 gap-6">
+    <div class="grid grid-cols-1 gap-8">
       <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Your Brand</label>
+        <label class="block text-xs uppercase tracking-widest text-[var(--ink-soft)] mb-2">Your Brand</label>
         <input
           name="user_brand"
           required
           placeholder="e.g., Warby Parker"
-          class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+          class="field-input w-full text-lg font-serif"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">
-          Competitors <span class="text-slate-400 font-normal">(comma-separated, up to 10)</span>
+        <label class="block text-xs uppercase tracking-widest text-[var(--ink-soft)] mb-2">
+          Competitors <span class="normal-case font-normal text-[var(--ink-soft)]">(comma-separated, up to 10)</span>
         </label>
         <input
           name="competitors"
           required
           placeholder="Ray-Ban, Zenni Optical, GlassesUSA"
-          class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+          class="field-input w-full text-lg font-serif"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">
-          Industry hint <span class="text-slate-400 font-normal">(optional)</span>
+        <label class="block text-xs uppercase tracking-widest text-[var(--ink-soft)] mb-2">
+          Industry hint <span class="normal-case font-normal text-[var(--ink-soft)]">(optional)</span>
         </label>
         <input
           name="industry_hint"
           placeholder="e.g., DTC eyewear"
-          class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+          class="field-input w-full text-lg font-serif"
         />
       </div>
 
-      <label class="flex items-center gap-3 cursor-pointer bg-slate-50 hover:bg-slate-100 transition rounded-xl px-4 py-3 border border-slate-200">
-        <input type="checkbox" name="generate_creatives" checked class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500" />
-        <span class="text-sm text-slate-700 font-medium">Generate 3 fresh ad creatives with Nano Banana</span>
+      <label class="flex items-center gap-3 cursor-pointer py-2">
+        <input type="checkbox" name="generate_creatives" checked class="w-5 h-5 accent-[var(--accent)]" />
+        <span class="text-sm text-[var(--ink-soft)]">Generate 3 fresh ad creatives with Nano Banana</span>
       </label>
 
       <button
         id="submit-btn"
         type="submit"
-        class="submit-btn w-full py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white font-bold text-lg shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2"
+        class="submit-btn w-full py-4 text-sm font-semibold uppercase flex items-center justify-center gap-2"
       >
         <span class="btn-idle items-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-          Analyze competitors
+          Analyze Competitors
         </span>
         <span class="btn-loading items-center gap-2">
-          <svg class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+          <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          Working on it...
+          Working On It...
         </span>
       </button>
     </div>
   </form>
 
   <!-- Fun animated progress overlay, shown only while HTMX request is in flight -->
-  <div id="progress-overlay" class="relative z-10 bg-white rounded-2xl shadow-xl border border-indigo-100 p-8 mb-8">
+  <div id="progress-overlay" class="mb-14">
+    <div class="rule mb-6"></div>
     <div class="flex items-center gap-3 mb-6">
-      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center animate-pulse">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-8 h-8 rounded-full border-2 border-[var(--accent)] flex items-center justify-center animate-pulse flex-shrink-0">
+        <svg class="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
         </svg>
       </div>
       <div>
-        <p class="font-bold text-slate-900">Tannie is sniffing out your competitors' secrets...</p>
-        <p class="text-xs text-slate-500">This calls real Gemini AI multiple times &mdash; usually takes 45&ndash;75 seconds.</p>
+        <p class="font-serif text-lg font-semibold">Tannie is sniffing out your competitors' secrets&hellip;</p>
+        <p class="text-xs text-[var(--ink-soft)]">Real Gemini AI calls in progress &mdash; usually takes 45&ndash;75 seconds.</p>
       </div>
     </div>
 
-    <!-- Sliding progress bar (approximate, not tied to real backend events) -->
-    <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden mb-6">
-      <div class="progress-fill h-full rounded-full bg-gradient-to-r from-indigo-500 via-pink-500 to-amber-500" style="width: 6%;"></div>
+    <div class="h-1 bg-[var(--paper-line)] overflow-hidden mb-6">
+      <div class="progress-fill h-full bg-[var(--accent)]" style="width: 6%;"></div>
     </div>
 
-    <!-- Stage checklist -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
       <div class="flex items-center gap-2 stage" data-stage="1">
-        <span class="stage-dot w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-        <span class="stage-label text-slate-500">Fetching competitor ads</span>
+        <span class="stage-dot w-2 h-2 rounded-full bg-[var(--paper-line)] flex-shrink-0"></span>
+        <span class="stage-label text-[var(--ink-soft)]">Fetching competitor ads</span>
       </div>
       <div class="flex items-center gap-2 stage" data-stage="2">
-        <span class="stage-dot w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-        <span class="stage-label text-slate-500">Flagging proven winners</span>
+        <span class="stage-dot w-2 h-2 rounded-full bg-[var(--paper-line)] flex-shrink-0"></span>
+        <span class="stage-label text-[var(--ink-soft)]">Flagging proven winners</span>
       </div>
       <div class="flex items-center gap-2 stage" data-stage="3">
-        <span class="stage-dot w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-        <span class="stage-label text-slate-500">Extracting patterns with Gemini</span>
+        <span class="stage-dot w-2 h-2 rounded-full bg-[var(--paper-line)] flex-shrink-0"></span>
+        <span class="stage-label text-[var(--ink-soft)]">Extracting patterns with Gemini</span>
       </div>
       <div class="flex items-center gap-2 stage" data-stage="4">
-        <span class="stage-dot w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-        <span class="stage-label text-slate-500">Finding your gaps</span>
+        <span class="stage-dot w-2 h-2 rounded-full bg-[var(--paper-line)] flex-shrink-0"></span>
+        <span class="stage-label text-[var(--ink-soft)]">Finding your gaps</span>
       </div>
       <div class="flex items-center gap-2 stage" data-stage="5">
-        <span class="stage-dot w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-        <span class="stage-label text-slate-500">Generating creatives</span>
+        <span class="stage-dot w-2 h-2 rounded-full bg-[var(--paper-line)] flex-shrink-0"></span>
+        <span class="stage-label text-[var(--ink-soft)]">Generating creatives</span>
       </div>
       <div class="flex items-center gap-2 stage" data-stage="6">
-        <span class="stage-dot w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-        <span class="stage-label text-slate-500">Writing executive summary</span>
+        <span class="stage-dot w-2 h-2 rounded-full bg-[var(--paper-line)] flex-shrink-0"></span>
+        <span class="stage-label text-[var(--ink-soft)]">Writing executive summary</span>
       </div>
     </div>
   </div>
 
   <!-- Report target -->
-  <div id="report" class="relative z-10"></div>
+  <div id="report"></div>
 
   <!-- Footer -->
-  <footer class="relative z-10 mt-12 text-center text-sm text-slate-400">
-    Built with Google ADK · Gemini 2.5 · Nano Banana · Firebase · Cloud Run
+  <footer class="mt-16 text-center">
+    <div class="rule mb-6"></div>
+    <p class="text-xs uppercase tracking-widest text-[var(--ink-soft)]">
+      Built with Google ADK &middot; Gemini 2.5 &middot; Nano Banana &middot; Firebase &middot; Cloud Run
+    </p>
   </footer>
 
 </div>
@@ -252,8 +253,6 @@
   function resetStages() {
     document.querySelectorAll('#progress-overlay .stage').forEach((el) => {
       el.classList.remove('stage-active', 'stage-done');
-      el.querySelector('.stage-dot').classList.remove('bg-emerald-500');
-      el.querySelector('.stage-dot').classList.add('bg-slate-300');
     });
   }
 
@@ -281,7 +280,6 @@
       document.querySelectorAll('#progress-overlay .stage').forEach((el) => {
         el.classList.remove('stage-active');
         el.classList.add('stage-done');
-        el.querySelector('.stage-dot').classList.add('bg-emerald-500');
       });
     }
   });

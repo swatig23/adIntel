@@ -46,9 +46,10 @@ class ReportAgent:
         competitors: list[Competitor],
         patterns: list[Pattern],
         gaps: list[GapItem],
+        winner_count: int,
     ) -> str:
         total_ads = sum(len(c.ads) for c in competitors)
-        winners = sum(len(c.winner_ads) for c in competitors)
+        winners = winner_count
 
         patterns_block = (
             "\n".join(

@@ -126,4 +126,20 @@ class AnalysisReport(BaseModel):
     gaps: list[GapItem]
     generated_creatives: list[GeneratedCreative] = Field(default_factory=list)
     executive_summary: str
+    # The ACTUAL ad IDs LongevityAgent flagged as winners for this run --
+    # NOT recomputed via Competitor.winner_ads (which hardcodes the 90-day
+    # rule and ignores BQ_SKIP_LONGEVITY_FILTER). Sources without delivery
+    # dates correctly show every ad here instead of always displaying 0.
+    winner_ad_ids: list[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=_utcnow)
+
+    @property
+    def winner_count(self) -> int:
+        return len(self.winner_ad_ids)
+
+    def winners_for(self, competitor: "Competitor") -> list[Ad]:
+        """Ads for this competitor that were actually flagged as winners
+        by LongevityAgent -- respects BQ_SKIP_LONGEVITY_FILTER, unlike
+        Competitor.winner_ads."""
+        winner_ids = set(self.winner_ad_ids)
+        return [a for a in competitor.ads if a.id in winner_ids]

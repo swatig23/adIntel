@@ -121,20 +121,72 @@ class CreateAgent:
 
     @staticmethod
     def _draw_fallback_card(brand: str, idx: int, concept: dict, output_path: Path) -> Path:
-        from PIL import Image, ImageDraw
+        from PIL import Image, ImageDraw, ImageFont
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         img = Image.new("RGB", (600, 600), color=(15, 23, 42))  # Dark slate background
         draw = ImageDraw.Draw(img)
 
-        # Header accent bar
         colors = [(79, 70, 229), (236, 72, 153), (16, 185, 129)]
         bar_color = colors[idx % len(colors)]
-        draw.rectangle([0, 0, 600, 100], fill=bar_color)
+        draw.rectangle([0, 0, 600, 90], fill=bar_color)
 
-        # Draw card framing
-        draw.rectangle([30, 130, 570, 480], outline=(51, 65, 85), width=2)
-        draw.rectangle([50, 430, 220, 470], fill=bar_color)
+        # Try a real TTF for legible text; fall back to PIL's bitmap font
+        # if none is available on this system (still renders, just smaller).
+        def _font(size: int):
+            for candidate in (
+                "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+                "/System/Library/Fonts/Helvetica.ttc",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            ):
+                try:
+                    return ImageFont.truetype(candidate, size)
+                except OSError:
+                    continue
+            return ImageFont.load_default()
+
+        font_brand = _font(28)
+        font_hook = _font(22)
+        font_body = _font(16)
+        font_cta = _font(18)
+
+        draw.text((30, 30), brand.upper(), font=font_brand, fill=(255, 255, 255))
+
+        def _wrap(text: str, width_chars: int) -> list[str]:
+            words = text.split()
+            lines, current = [], ""
+            for w in words:
+                trial = f"{current} {w}".strip()
+                if len(trial) > width_chars and current:
+                    lines.append(current)
+                    current = w
+                else:
+                    current = trial
+            if current:
+                lines.append(current)
+            return lines
+
+        y = 130
+        for line in _wrap(concept.get("hook", ""), 28):
+            draw.text((30, y), line, font=font_hook, fill=(255, 255, 255))
+            y += 32
+
+        y += 20
+        for line in _wrap(concept.get("body_copy", ""), 42):
+            draw.text((30, y), line, font=font_body, fill=(203, 213, 225))
+            y += 24
+
+        # CTA pill anchored near the bottom
+        cta_text = concept.get("cta", "Learn More")
+        draw.rounded_rectangle([30, 520, 260, 565], radius=8, fill=bar_color)
+        draw.text((50, 533), cta_text, font=font_cta, fill=(255, 255, 255))
+
+        draw.text(
+            (30, 575),
+            "Concept placeholder -- image quota unavailable",
+            font=_font(11),
+            fill=(100, 116, 139),
+        )
 
         img.save(output_path, "PNG")
         return output_path

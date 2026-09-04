@@ -148,6 +148,7 @@ class ReportNode(BaseAgent):
             competitors=state["competitors"],
             patterns=state["patterns"],
             gaps=state["gaps"],
+            winner_count=len(state["winners"]),
         )
         state["executive_summary"] = summary
         yield _done_event(self.name, {"executive_summary": summary})
@@ -217,4 +218,5 @@ async def run_via_adk(
         gaps=state["gaps"],
         generated_creatives=state.get("creatives", []),
         executive_summary=state["executive_summary"],
+        winner_ad_ids=[a.id for a in state["winners"]],
     )
