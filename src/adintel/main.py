@@ -87,7 +87,7 @@ async def analyze(
     user_brand: str = Form(...),
     competitors: str = Form(...),
     industry_hint: str = Form(""),
-    generate_creatives: str = Form("on"),
+    generate_creatives: str = Form("off"),
 ):
     competitor_list = [c.strip() for c in competitors.split(",") if c.strip()]
     if not competitor_list:
