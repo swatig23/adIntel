@@ -1,126 +1,3 @@
-INFO:     Will watch for changes in these directories: ['/Users/shawttygarg/Documents/Projects/adIntel']
-INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [70776] using WatchFiles
-2026-09-04 17:46:25.192 | INFO     | adintel.storage:__init__:98 - [FirestoreStore] project=gen-lang-client-0516852331 collection=adintel_analyses
-INFO:     Started server process [70778]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     127.0.0.1:57732 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:57732 - "GET /favicon.ico HTTP/1.1" 404 Not Found
-2026-09-04 17:47:11.244 | INFO     | adintel.main:run_pipeline:64 - [main] routing through ADK SequentialAgent
-2026-09-04 17:47:11.271 | INFO     | adintel.agents.adk_pipeline:run_via_adk:196 - [ADK] running SequentialAgent adintel_pipeline
-2026-09-04 17:47:11.346 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 3 brands
-2026-09-04 17:47:11.346 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'tarzan' (limit 25)
-2026-09-04 17:47:11.346 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'BMW' (limit 25)
-2026-09-04 17:47:11.346 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Audi. AutoZone' (limit 25)
-2026-09-04 17:47:14.213 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
-2026-09-04 17:47:14.213 | INFO     | adintel.agents.ingest:_one:32 -   ↳ tarzan: 0 ads
-2026-09-04 17:47:14.506 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 9 rows, mapped 9 ads
-2026-09-04 17:47:14.507 | INFO     | adintel.agents.ingest:_one:32 -   ↳ BMW: 9 ads
-2026-09-04 17:47:14.542 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
-2026-09-04 17:47:14.543 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Audi. AutoZone: 0 ads
-2026-09-04 17:47:14.545 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 9 ads as winners (no date signal in this source)
-2026-09-04 17:47:14.546 | INFO     | adintel.agents.analyze:run:70 - [AnalyzeAgent] Gemini call — 9 ads, 0 images
-Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
-INFO:     127.0.0.1:57931 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 Not Found
-2026-09-04 17:47:39.389 | INFO     | adintel.agents.analyze:_parse_patterns:116 - [AnalyzeAgent] extracted 6 patterns
-2026-09-04 17:47:41.394 | INFO     | adintel.agents.gap:run:66 - [GapAgent] comparing 0 user ads against 6 patterns
-2026-09-04 17:48:04.984 | INFO     | adintel.agents.gap:_parse:109 - [GapAgent] produced 6 gap items
-WARNING:  WatchFiles detected changes in 'scripts/convert_excel_to_jsonl.py', 'scripts/convert_excel_to_csv.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for connections to close. (CTRL+C to force quit)
-2026-09-04 17:48:41.188 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 18.823508638s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '18s'}]}}); creating styled concept graphic
-2026-09-04 17:48:41.558 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 18.452529637s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '18s'}]}}); creating styled concept graphic
-2026-09-04 17:48:41.565 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 18.445559746s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '18s'}]}}); creating styled concept graphic
-2026-09-04 17:48:41.571 | INFO     | adintel.agents.create:run:86 - [CreateAgent] produced 3 creatives
-2026-09-04 17:48:43.576 | INFO     | adintel.agents.report:run:75 - [ReportAgent] writing summary for tarzan
-2026-09-04 17:49:10.109 | WARNING  | adintel.main:analyze:118 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
-domain: "googleapis.com"
-metadata {
-  key: "service"
-  value: "firestore.googleapis.com"
-}
-metadata {
-  key: "serviceTitle"
-  value: "Cloud Firestore API"
-}
-metadata {
-  key: "containerInfo"
-  value: "gen-lang-client-0516852331"
-}
-metadata {
-  key: "consumer"
-  value: "projects/gen-lang-client-0516852331"
-}
-metadata {
-  key: "activationUrl"
-  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
-}
-, locale: "en-US"
-message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
-, links {
-  description: "Google developers console API activation"
-  url: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
-}
-]
-INFO:     127.0.0.1:57733 - "POST /analyze HTTP/1.1" 200 OK
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [70778]
-2026-09-04 17:49:11.197 | INFO     | adintel.storage:__init__:98 - [FirestoreStore] project=gen-lang-client-0516852331 collection=adintel_analyses
-INFO:     Started server process [70911]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-2026-09-04 17:49:11.218 | INFO     | adintel.main:run_pipeline:64 - [main] routing through ADK SequentialAgent
-2026-09-04 17:49:11.228 | INFO     | adintel.agents.adk_pipeline:run_via_adk:196 - [ADK] running SequentialAgent adintel_pipeline
-2026-09-04 17:49:11.282 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 3 brands
-2026-09-04 17:49:11.282 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'tarzan' (limit 25)
-2026-09-04 17:49:11.282 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'BMW' (limit 25)
-2026-09-04 17:49:11.283 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Audi. AutoZone' (limit 25)
-INFO:     127.0.0.1:58447 - "GET /creatives/tarzan_creative_1.png HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58448 - "GET /creatives/tarzan_creative_2.png HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58449 - "GET /creatives/tarzan_creative_3.png HTTP/1.1" 200 OK
-2026-09-04 17:49:13.948 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
-2026-09-04 17:49:13.948 | INFO     | adintel.agents.ingest:_one:32 -   ↳ tarzan: 0 ads
-2026-09-04 17:49:14.240 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 9 rows, mapped 9 ads
-2026-09-04 17:49:14.240 | INFO     | adintel.agents.ingest:_one:32 -   ↳ BMW: 9 ads
-2026-09-04 17:49:14.403 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
-2026-09-04 17:49:14.403 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Audi. AutoZone: 0 ads
-2026-09-04 17:49:14.405 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 9 ads as winners (no date signal in this source)
-2026-09-04 17:49:14.406 | INFO     | adintel.agents.analyze:run:70 - [AnalyzeAgent] Gemini call — 9 ads, 0 images
-Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
-INFO:     127.0.0.1:58505 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 Not Found
-2026-09-04 17:49:37.602 | INFO     | adintel.agents.analyze:_parse_patterns:116 - [AnalyzeAgent] extracted 6 patterns
-2026-09-04 17:49:39.611 | INFO     | adintel.agents.gap:run:66 - [GapAgent] comparing 0 user ads against 6 patterns
-2026-09-04 17:49:56.459 | INFO     | adintel.agents.gap:_parse:109 - [GapAgent] produced 6 gap items
-2026-09-04 17:50:15.232 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}); falling back to next candidate model...
-2026-09-04 17:50:19.885 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 40.131473332s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '40s'}]}}); creating styled concept graphic
-2026-09-04 17:50:19.937 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 40.091849894s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '40s'}]}}); creating styled concept graphic
-2026-09-04 17:50:19.940 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 40.090024692s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '40s'}]}}); creating styled concept graphic
-2026-09-04 17:50:19.943 | INFO     | adintel.agents.create:run:86 - [CreateAgent] produced 3 creatives
-2026-09-04 17:50:21.947 | INFO     | adintel.agents.report:run:75 - [ReportAgent] writing summary for tarzan
-2026-09-04 17:50:47.586 | WARNING  | adintel.main:analyze:118 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
-domain: "googleapis.com"
-metadata {
-  key: "service"
-  value: "firestore.googleapis.com"
-}
-metadata {
-  key: "serviceTitle"
-  value: "Cloud Firestore API"
-}
-metadata {
-  key: "containerInfo"
-  value: "gen-lang-client-0516852331"
-}
-metadata {
-  key: "consumer"
-  value: "projects/gen-lang-client-0516852331"
-}
-metadata {
-  key: "activationUrl"
-  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
-}
 , locale: "en-US"
 message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
 , links {
@@ -129,3 +6,461 @@ message: "Cloud Firestore API has not been used in project gen-lang-client-05168
 }
 ]
 INFO:     127.0.0.1:58446 - "POST /analyze HTTP/1.1" 200 OK
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [70911]
+INFO:     Stopping reloader process [70776]
+shawttygarg@Swatis-MacBook-Pro adIntel % PYTHONPATH=src uv run python -m uvicorn adintel.main:app --reload --port 8000
+INFO:     Will watch for changes in these directories: ['/Users/shawttygarg/Documents/Projects/adIntel']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [71780] using WatchFiles
+2026-09-04 20:15:50.883 | INFO     | adintel.storage:__init__:98 - [FirestoreStore] project=gen-lang-client-0516852331 collection=adintel_analyses
+INFO:     Started server process [71782]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:60777 - "GET / HTTP/1.1" 200 OK
+2026-09-04 20:17:31.957 | INFO     | adintel.main:run_pipeline:66 - [main] routing through ADK SequentialAgent
+2026-09-04 20:17:31.988 | INFO     | adintel.agents.adk_pipeline:run_via_adk:197 - [ADK] running SequentialAgent adintel_pipeline
+2026-09-04 20:17:32.053 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 4 brands
+2026-09-04 20:17:32.053 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'tarzan' (limit 25)
+2026-09-04 20:17:32.053 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'BMW' (limit 25)
+2026-09-04 20:17:32.053 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Audi' (limit 25)
+2026-09-04 20:17:32.053 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'AutoZone' (limit 25)
+2026-09-04 20:17:34.496 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 9 rows, mapped 9 ads
+2026-09-04 20:17:34.497 | INFO     | adintel.agents.ingest:_one:32 -   ↳ BMW: 9 ads
+2026-09-04 20:17:34.576 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 1 rows, mapped 1 ads
+2026-09-04 20:17:34.577 | INFO     | adintel.agents.ingest:_one:32 -   ↳ AutoZone: 1 ads
+2026-09-04 20:17:34.602 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 20:17:34.602 | INFO     | adintel.agents.ingest:_one:32 -   ↳ tarzan: 0 ads
+2026-09-04 20:17:34.673 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 8 rows, mapped 8 ads
+2026-09-04 20:17:34.673 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Audi: 8 ads
+2026-09-04 20:17:34.676 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 18 ads as winners (no date signal in this source)
+2026-09-04 20:17:34.677 | INFO     | adintel.agents.analyze:run:70 - [AnalyzeAgent] Gemini call — 18 ads, 0 images
+Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+2026-09-04 20:17:57.042 | INFO     | adintel.agents.analyze:_parse_patterns:116 - [AnalyzeAgent] extracted 6 patterns
+2026-09-04 20:17:59.051 | INFO     | adintel.agents.gap:run:66 - [GapAgent] comparing 0 user ads against 6 patterns
+2026-09-04 20:18:15.237 | INFO     | adintel.agents.gap:_parse:109 - [GapAgent] produced 6 gap items
+2026-09-04 20:18:17.239 | INFO     | adintel.agents.report:run:76 - [ReportAgent] writing summary for tarzan
+2026-09-04 20:18:17.459 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 42.57184438s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '42s'}]}}); falling back to next candidate model...
+2026-09-04 20:18:22.509 | WARNING  | adintel.main:analyze:120 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
+domain: "googleapis.com"
+metadata {
+  key: "service"
+  value: "firestore.googleapis.com"
+}
+metadata {
+  key: "serviceTitle"
+  value: "Cloud Firestore API"
+}
+metadata {
+  key: "containerInfo"
+  value: "gen-lang-client-0516852331"
+}
+metadata {
+  key: "consumer"
+  value: "projects/gen-lang-client-0516852331"
+}
+metadata {
+  key: "activationUrl"
+  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+, locale: "en-US"
+message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+, links {
+  description: "Google developers console API activation"
+  url: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+]
+INFO:     127.0.0.1:61156 - "POST /analyze HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'src/adintel/main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [71782]
+2026-09-04 20:47:50.955 | INFO     | adintel.storage:__init__:98 - [FirestoreStore] project=gen-lang-client-0516852331 collection=adintel_analyses
+INFO:     Started server process [72164]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72164]
+INFO:     Stopping reloader process [71780]
+shawttygarg@Swatis-MacBook-Pro adIntel % PYTHONPATH=src uv run python -m uvicorn adintel.main:app --reload --port 8000
+INFO:     Will watch for changes in these directories: ['/Users/shawttygarg/Documents/Projects/adIntel']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [72319] using WatchFiles
+2026-09-04 20:47:58.830 | INFO     | adintel.storage:__init__:98 - [FirestoreStore] project=gen-lang-client-0516852331 collection=adintel_analyses
+INFO:     Started server process [72321]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:64053 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64053 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64054 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 Not Found
+2026-09-04 20:48:37.956 | INFO     | adintel.main:run_pipeline:66 - [main] routing through ADK SequentialAgent
+2026-09-04 20:48:38.023 | INFO     | adintel.agents.adk_pipeline:run_via_adk:197 - [ADK] running SequentialAgent adintel_pipeline
+2026-09-04 20:48:38.096 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 4 brands
+2026-09-04 20:48:38.097 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'tarzan' (limit 25)
+2026-09-04 20:48:38.097 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'BMW' (limit 25)
+2026-09-04 20:48:38.097 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Audi' (limit 25)
+2026-09-04 20:48:38.097 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'AutoZone' (limit 25)
+2026-09-04 20:48:40.658 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 9 rows, mapped 9 ads
+2026-09-04 20:48:40.659 | INFO     | adintel.agents.ingest:_one:32 -   ↳ BMW: 9 ads
+2026-09-04 20:48:40.697 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 20:48:40.698 | INFO     | adintel.agents.ingest:_one:32 -   ↳ tarzan: 0 ads
+2026-09-04 20:48:40.711 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 8 rows, mapped 8 ads
+2026-09-04 20:48:40.711 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Audi: 8 ads
+2026-09-04 20:48:40.890 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 1 rows, mapped 1 ads
+2026-09-04 20:48:40.890 | INFO     | adintel.agents.ingest:_one:32 -   ↳ AutoZone: 1 ads
+2026-09-04 20:48:40.892 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 18 ads as winners (no date signal in this source)
+2026-09-04 20:48:40.892 | INFO     | adintel.agents.analyze:run:70 - [AnalyzeAgent] Gemini call — 18 ads, 0 images
+Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+2026-09-04 20:48:41.465 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 18.567160926s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '18s'}]}}); falling back to next candidate model...
+2026-09-04 20:48:48.594 | INFO     | adintel.agents.analyze:_parse_patterns:116 - [AnalyzeAgent] extracted 6 patterns
+2026-09-04 20:48:50.597 | INFO     | adintel.agents.gap:run:66 - [GapAgent] comparing 0 user ads against 6 patterns
+2026-09-04 20:48:50.810 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 9.214393616s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '9s'}]}}); falling back to next candidate model...
+2026-09-04 20:48:58.648 | INFO     | adintel.agents.gap:_parse:109 - [GapAgent] produced 6 gap items
+2026-09-04 20:49:00.649 | INFO     | adintel.agents.report:run:76 - [ReportAgent] writing summary for tarzan
+2026-09-04 20:49:00.849 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 59.178949476s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '59s'}]}}); falling back to next candidate model...
+2026-09-04 20:49:04.371 | WARNING  | adintel.main:analyze:127 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
+domain: "googleapis.com"
+metadata {
+  key: "service"
+  value: "firestore.googleapis.com"
+}
+metadata {
+  key: "serviceTitle"
+  value: "Cloud Firestore API"
+}
+metadata {
+  key: "containerInfo"
+  value: "gen-lang-client-0516852331"
+}
+metadata {
+  key: "consumer"
+  value: "projects/gen-lang-client-0516852331"
+}
+metadata {
+  key: "activationUrl"
+  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+, locale: "en-US"
+message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+, links {
+  description: "Google developers console API activation"
+  url: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+]
+INFO:     127.0.0.1:64192 - "POST /analyze HTTP/1.1" 200 OK
+2026-09-04 20:50:58.233 | INFO     | adintel.main:run_pipeline:66 - [main] routing through ADK SequentialAgent
+2026-09-04 20:50:58.238 | INFO     | adintel.agents.adk_pipeline:run_via_adk:197 - [ADK] running SequentialAgent adintel_pipeline
+2026-09-04 20:50:58.255 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 4 brands
+2026-09-04 20:50:58.256 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'tarzan' (limit 25)
+2026-09-04 20:50:58.257 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'BMW' (limit 25)
+2026-09-04 20:50:58.257 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Audi' (limit 25)
+2026-09-04 20:50:58.257 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'AutoZone' (limit 25)
+2026-09-04 20:51:00.705 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 1 rows, mapped 1 ads
+2026-09-04 20:51:00.706 | INFO     | adintel.agents.ingest:_one:32 -   ↳ AutoZone: 1 ads
+2026-09-04 20:51:00.837 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 20:51:00.838 | INFO     | adintel.agents.ingest:_one:32 -   ↳ tarzan: 0 ads
+2026-09-04 20:51:00.897 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 9 rows, mapped 9 ads
+2026-09-04 20:51:00.897 | INFO     | adintel.agents.ingest:_one:32 -   ↳ BMW: 9 ads
+2026-09-04 20:51:01.282 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 8 rows, mapped 8 ads
+2026-09-04 20:51:01.282 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Audi: 8 ads
+2026-09-04 20:51:01.285 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 18 ads as winners (no date signal in this source)
+2026-09-04 20:51:01.285 | INFO     | adintel.agents.analyze:run:70 - [AnalyzeAgent] Gemini call — 18 ads, 0 images
+2026-09-04 20:51:01.792 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 58.243354414s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '58s'}]}}); falling back to next candidate model...
+2026-09-04 20:51:09.369 | INFO     | adintel.agents.analyze:_parse_patterns:116 - [AnalyzeAgent] extracted 6 patterns
+2026-09-04 20:51:11.372 | INFO     | adintel.agents.gap:run:66 - [GapAgent] comparing 0 user ads against 6 patterns
+2026-09-04 20:51:11.571 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 48.449242169s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '48s'}]}}); falling back to next candidate model...
+2026-09-04 20:51:20.084 | INFO     | adintel.agents.gap:_parse:109 - [GapAgent] produced 6 gap items
+2026-09-04 20:51:22.295 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 37.722830522s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '37s'}]}}); falling back to next candidate model...
+2026-09-04 20:51:29.232 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 30.785982343s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '30s'}]}}); creating styled concept graphic
+2026-09-04 20:51:29.579 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 30.43832633s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '30s'}]}}); creating styled concept graphic
+2026-09-04 20:51:29.601 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 30.43201034s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '30s'}]}}); creating styled concept graphic
+2026-09-04 20:51:29.614 | INFO     | adintel.agents.create:run:86 - [CreateAgent] produced 3 creatives
+2026-09-04 20:51:31.616 | INFO     | adintel.agents.report:run:76 - [ReportAgent] writing summary for tarzan
+2026-09-04 20:51:31.791 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 28.232937724s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '28s'}]}}); falling back to next candidate model...
+2026-09-04 20:51:40.010 | WARNING  | adintel.main:analyze:127 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
+domain: "googleapis.com"
+metadata {
+  key: "service"
+  value: "firestore.googleapis.com"
+}
+metadata {
+  key: "serviceTitle"
+  value: "Cloud Firestore API"
+}
+metadata {
+  key: "containerInfo"
+  value: "gen-lang-client-0516852331"
+}
+metadata {
+  key: "consumer"
+  value: "projects/gen-lang-client-0516852331"
+}
+metadata {
+  key: "activationUrl"
+  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+, locale: "en-US"
+message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+, links {
+  description: "Google developers console API activation"
+  url: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+]
+INFO:     127.0.0.1:64795 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64795 - "GET /creatives/tarzan_creative_2.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64977 - "GET /creatives/tarzan_creative_1.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64978 - "GET /creatives/tarzan_creative_3.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65278 - "GET /creatives/tarzan_creative_3.png HTTP/1.1" 200 OK
+^C
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72321]
+INFO:     Stopping reloader process [72319]
+shawttygarg@Swatis-MacBook-Pro adIntel % PYTHONPATH=src uv run python -m uvicorn adintel.main:app --reload --port 8000
+INFO:     Will watch for changes in these directories: ['/Users/shawttygarg/Documents/Projects/adIntel']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [72859] using WatchFiles
+2026-09-04 21:09:34.642 | INFO     | adintel.storage:__init__:98 - [FirestoreStore] project=gen-lang-client-0516852331 collection=adintel_analyses
+INFO:     Started server process [72861]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:50017 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50018 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 Not Found
+2026-09-04 21:10:21.460 | INFO     | adintel.main:run_pipeline:72 - [main] routing through ADK SequentialAgent
+2026-09-04 21:10:21.508 | INFO     | adintel.agents.adk_pipeline:run_via_adk:197 - [ADK] running SequentialAgent adintel_pipeline
+2026-09-04 21:10:21.580 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 4 brands
+2026-09-04 21:10:21.581 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'tarzan' (limit 25)
+2026-09-04 21:10:21.581 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'BMW' (limit 25)
+2026-09-04 21:10:21.581 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Audi' (limit 25)
+2026-09-04 21:10:21.581 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'AutoZone' (limit 25)
+2026-09-04 21:10:24.131 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 1 rows, mapped 1 ads
+2026-09-04 21:10:24.131 | INFO     | adintel.agents.ingest:_one:32 -   ↳ AutoZone: 1 ads
+2026-09-04 21:10:24.132 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 8 rows, mapped 8 ads
+2026-09-04 21:10:24.132 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Audi: 8 ads
+2026-09-04 21:10:24.268 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 9 rows, mapped 9 ads
+2026-09-04 21:10:24.268 | INFO     | adintel.agents.ingest:_one:32 -   ↳ BMW: 9 ads
+2026-09-04 21:10:24.837 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 21:10:24.837 | INFO     | adintel.agents.ingest:_one:32 -   ↳ tarzan: 0 ads
+2026-09-04 21:10:24.839 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 18 ads as winners (no date signal in this source)
+2026-09-04 21:10:24.840 | INFO     | adintel.agents.analyze:run:70 - [AnalyzeAgent] Gemini call — 18 ads, 0 images
+Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+2026-09-04 21:10:25.389 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 34.637162242s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '34s'}]}}); falling back to next candidate model...
+2026-09-04 21:10:28.681 | INFO     | adintel.agents.analyze:_parse_patterns:116 - [AnalyzeAgent] extracted 6 patterns
+2026-09-04 21:10:30.685 | INFO     | adintel.agents.gap:run:66 - [GapAgent] comparing 0 user ads against 6 patterns
+2026-09-04 21:10:30.896 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 29.122273615s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '29s'}]}}); falling back to next candidate model...
+2026-09-04 21:10:36.618 | INFO     | adintel.agents.gap:_parse:109 - [GapAgent] produced 6 gap items
+2026-09-04 21:10:38.834 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 21.197788855s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '21s'}]}}); falling back to next candidate model...
+2026-09-04 21:10:51.345 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 8.697134919s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '8s'}]}}); creating styled concept graphic
+2026-09-04 21:10:52.097 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 8.013195147s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '8s'}]}}); creating styled concept graphic
+2026-09-04 21:10:52.127 | INFO     | adintel.agents.create:_render_image:119 - [CreateAgent] API image gen unavailable (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.5-flash-preview-image\nPlease retry in 7.999303905s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-preview-image', 'location': 'global'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}, {'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-preview-image'}}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '7s'}]}}); creating styled concept graphic
+2026-09-04 21:10:52.146 | INFO     | adintel.agents.create:run:86 - [CreateAgent] produced 3 creatives
+2026-09-04 21:10:54.149 | INFO     | adintel.agents.report:run:76 - [ReportAgent] writing summary for tarzan
+2026-09-04 21:10:54.430 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 5.623673558s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '5s'}]}}); falling back to next candidate model...
+2026-09-04 21:11:00.434 | WARNING  | adintel.main:analyze:148 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
+domain: "googleapis.com"
+metadata {
+  key: "service"
+  value: "firestore.googleapis.com"
+}
+metadata {
+  key: "serviceTitle"
+  value: "Cloud Firestore API"
+}
+metadata {
+  key: "containerInfo"
+  value: "gen-lang-client-0516852331"
+}
+metadata {
+  key: "consumer"
+  value: "projects/gen-lang-client-0516852331"
+}
+metadata {
+  key: "activationUrl"
+  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+, locale: "en-US"
+message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+, links {
+  description: "Google developers console API activation"
+  url: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+]
+INFO:     127.0.0.1:50144 - "POST /analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50144 - "GET /creatives/tarzan_creative_3.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50316 - "GET /creatives/tarzan_creative_1.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50317 - "GET /creatives/tarzan_creative_2.png HTTP/1.1" 200 OK
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72861]
+INFO:     Stopping reloader process [72859]
+shawttygarg@Swatis-MacBook-Pro adIntel % PYTHONPATH=src uv run python -m uvicorn adintel.main:app --reload --port 8000
+INFO:     Will watch for changes in these directories: ['/Users/shawttygarg/Documents/Projects/adIntel']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [73373] using WatchFiles
+2026-09-04 22:27:20.565 | INFO     | adintel.storage:__init__:98 - [FirestoreStore] project=gen-lang-client-0516852331 collection=adintel_analyses
+INFO:     Started server process [73375]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:52220 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52220 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52220 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+2026-09-04 22:27:56.145 | INFO     | adintel.main:run_pipeline:72 - [main] routing through ADK SequentialAgent
+2026-09-04 22:27:56.169 | INFO     | adintel.agents.adk_pipeline:run_via_adk:197 - [ADK] running SequentialAgent adintel_pipeline
+2026-09-04 22:27:56.263 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 4 brands
+2026-09-04 22:27:56.263 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Titan' (limit 25)
+2026-09-04 22:27:56.263 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'RayBan' (limit 25)
+2026-09-04 22:27:56.264 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Lenskart' (limit 25)
+2026-09-04 22:27:56.264 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'GlassesUSA' (limit 25)
+2026-09-04 22:27:58.841 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:27:58.842 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Titan: 0 ads
+2026-09-04 22:27:58.943 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:27:58.944 | INFO     | adintel.agents.ingest:_one:32 -   ↳ GlassesUSA: 0 ads
+2026-09-04 22:27:59.112 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:27:59.113 | INFO     | adintel.agents.ingest:_one:32 -   ↳ RayBan: 0 ads
+2026-09-04 22:27:59.323 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:27:59.323 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Lenskart: 0 ads
+2026-09-04 22:27:59.325 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 0 ads as winners (no date signal in this source)
+2026-09-04 22:27:59.325 | WARNING  | adintel.agents.analyze:run:58 - [AnalyzeAgent] no winning ads to analyze
+2026-09-04 22:28:01.326 | WARNING  | adintel.agents.gap:run:53 - [GapAgent] no patterns; nothing to compare
+2026-09-04 22:28:03.328 | WARNING  | adintel.agents.create:run:56 - [CreateAgent] no patterns; skipping creative generation
+2026-09-04 22:28:05.331 | INFO     | adintel.agents.report:run:76 - [ReportAgent] writing summary for Titan
+Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+2026-09-04 22:28:17.162 | WARNING  | adintel.main:analyze:148 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
+domain: "googleapis.com"
+metadata {
+  key: "service"
+  value: "firestore.googleapis.com"
+}
+metadata {
+  key: "serviceTitle"
+  value: "Cloud Firestore API"
+}
+metadata {
+  key: "containerInfo"
+  value: "gen-lang-client-0516852331"
+}
+metadata {
+  key: "consumer"
+  value: "projects/gen-lang-client-0516852331"
+}
+metadata {
+  key: "activationUrl"
+  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+, locale: "en-US"
+message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+, links {
+  description: "Google developers console API activation"
+  url: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+]
+INFO:     127.0.0.1:52221 - "POST /analyze HTTP/1.1" 200 OK
+2026-09-04 22:29:01.457 | INFO     | adintel.main:run_pipeline:72 - [main] routing through ADK SequentialAgent
+2026-09-04 22:29:01.460 | INFO     | adintel.agents.adk_pipeline:run_via_adk:197 - [ADK] running SequentialAgent adintel_pipeline
+2026-09-04 22:29:01.469 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 4 brands
+2026-09-04 22:29:01.470 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Titan' (limit 25)
+2026-09-04 22:29:01.470 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'RayBan' (limit 25)
+2026-09-04 22:29:01.471 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Lenskart' (limit 25)
+2026-09-04 22:29:01.471 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'GlassesUSA' (limit 25)
+2026-09-04 22:29:03.350 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:29:03.350 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Titan: 0 ads
+2026-09-04 22:29:03.498 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:29:03.499 | INFO     | adintel.agents.ingest:_one:32 -   ↳ RayBan: 0 ads
+2026-09-04 22:29:03.563 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:29:03.563 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Lenskart: 0 ads
+2026-09-04 22:29:03.734 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:29:03.734 | INFO     | adintel.agents.ingest:_one:32 -   ↳ GlassesUSA: 0 ads
+2026-09-04 22:29:03.740 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 0 ads as winners (no date signal in this source)
+2026-09-04 22:29:03.740 | WARNING  | adintel.agents.analyze:run:58 - [AnalyzeAgent] no winning ads to analyze
+2026-09-04 22:29:05.743 | WARNING  | adintel.agents.gap:run:53 - [GapAgent] no patterns; nothing to compare
+2026-09-04 22:29:07.745 | WARNING  | adintel.agents.create:run:56 - [CreateAgent] no patterns; skipping creative generation
+2026-09-04 22:29:09.748 | INFO     | adintel.agents.report:run:76 - [ReportAgent] writing summary for Titan
+2026-09-04 22:29:10.511 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 49.505348582s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '49s'}]}}); falling back to next candidate model...
+2026-09-04 22:29:14.372 | WARNING  | adintel.main:analyze:148 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
+domain: "googleapis.com"
+metadata {
+  key: "service"
+  value: "firestore.googleapis.com"
+}
+metadata {
+  key: "serviceTitle"
+  value: "Cloud Firestore API"
+}
+metadata {
+  key: "containerInfo"
+  value: "gen-lang-client-0516852331"
+}
+metadata {
+  key: "consumer"
+  value: "projects/gen-lang-client-0516852331"
+}
+metadata {
+  key: "activationUrl"
+  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+, locale: "en-US"
+message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+, links {
+  description: "Google developers console API activation"
+  url: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+]
+INFO:     127.0.0.1:52645 - "POST /analyze HTTP/1.1" 200 OK
+2026-09-04 22:29:26.872 | INFO     | adintel.main:run_pipeline:72 - [main] routing through ADK SequentialAgent
+2026-09-04 22:29:26.873 | INFO     | adintel.agents.adk_pipeline:run_via_adk:197 - [ADK] running SequentialAgent adintel_pipeline
+2026-09-04 22:29:26.880 | INFO     | adintel.agents.ingest:run:24 - [IngestAgent] fetching ads for 4 brands
+2026-09-04 22:29:26.881 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Warby Parker' (limit 25)
+2026-09-04 22:29:26.886 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'RayBan' (limit 25)
+2026-09-04 22:29:26.888 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'Zenni Optical' (limit 25)
+2026-09-04 22:29:26.888 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:406 - [bq_ads:transcripts] querying gen-lang-client-0516852331.commercial_ads.ad_transcripts for 'GlassesUSA' (limit 25)
+2026-09-04 22:29:28.856 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:29:28.856 | INFO     | adintel.agents.ingest:_one:32 -   ↳ RayBan: 0 ads
+2026-09-04 22:29:29.016 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:29:29.017 | INFO     | adintel.agents.ingest:_one:32 -   ↳ GlassesUSA: 0 ads
+2026-09-04 22:29:29.165 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:29:29.165 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Warby Parker: 0 ads
+2026-09-04 22:29:29.278 | INFO     | adintel.clients.bq_ads:fetch_transcripts_ads_for_advertiser:409 - [bq_ads:transcripts]   ↳ got 0 rows, mapped 0 ads
+2026-09-04 22:29:29.278 | INFO     | adintel.agents.ingest:_one:32 -   ↳ Zenni Optical: 0 ads
+2026-09-04 22:29:29.279 | INFO     | adintel.agents.longevity:run:29 - [LongevityAgent] BQ_SKIP_LONGEVITY_FILTER=true -> treating all 0 ads as winners (no date signal in this source)
+2026-09-04 22:29:29.279 | WARNING  | adintel.agents.analyze:run:58 - [AnalyzeAgent] no winning ads to analyze
+2026-09-04 22:29:31.280 | WARNING  | adintel.agents.gap:run:53 - [GapAgent] no patterns; nothing to compare
+2026-09-04 22:29:33.282 | WARNING  | adintel.agents.create:run:56 - [CreateAgent] no patterns; skipping creative generation
+2026-09-04 22:29:35.284 | INFO     | adintel.agents.report:run:76 - [ReportAgent] writing summary for Warby Parker
+2026-09-04 22:29:35.863 | WARNING  | adintel.clients.gemini:_call_with_retry:81 - [generate_text] Model gemini-3.5-flash busy (429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 24.160006853s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '24s'}]}}); falling back to next candidate model...
+2026-09-04 22:29:38.730 | WARNING  | adintel.main:analyze:148 - Could not persist report: 403 Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry. [reason: "SERVICE_DISABLED"
+domain: "googleapis.com"
+metadata {
+  key: "service"
+  value: "firestore.googleapis.com"
+}
+metadata {
+  key: "serviceTitle"
+  value: "Cloud Firestore API"
+}
+metadata {
+  key: "containerInfo"
+  value: "gen-lang-client-0516852331"
+}
+metadata {
+  key: "consumer"
+  value: "projects/gen-lang-client-0516852331"
+}
+metadata {
+  key: "activationUrl"
+  value: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+, locale: "en-US"
+message: "Cloud Firestore API has not been used in project gen-lang-client-0516852331 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+, links {
+  description: "Google developers console API activation"
+  url: "https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=gen-lang-client-0516852331"
+}
+]
+INFO:     127.0.0.1:52760 - "POST /analyze HTTP/1.1" 200 OK
