@@ -45,6 +45,14 @@ class Settings(BaseSettings):
     app_port: int = 8000
     log_level: str = "INFO"
 
+    # Orchestration backend. True = drive the pipeline through Google ADK's
+    # SequentialAgent (agents/adk_pipeline.py) -- the canonical multi-agent
+    # architecture for the hackathon. False = use the plain functional
+    # Orchestrator (agents/orchestrator.py), kept as an instant fallback if
+    # ADK misbehaves during a live demo. Both paths run the identical six
+    # agents and produce the same AnalysisReport shape.
+    adk_enabled: bool = True
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

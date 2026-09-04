@@ -102,9 +102,13 @@ class FirestoreStore:
         payload = report.model_dump(mode="json")
         payload["_id"] = report_id
         payload["_saved_at"] = self._firestore.SERVER_TIMESTAMP
-        self._client.collection(self._collection).document(report_id).set(payload)
-        logger.info(f"[FirestoreStore] saved report {report_id}")
-        return report_id
+        try:
+            self._client.collection(self._collection).document(report_id).set(payload)
+            logger.info(f"[FirestoreStore] saved report {report_id}")
+            return report_id
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"[FirestoreStore] save failed ({e}); falling back to LocalJsonStore")
+            return LocalJsonStore().save(report)
 
     def load(self, report_id: str) -> AnalysisReport | None:
         doc = self._client.collection(self._collection).document(report_id).get()

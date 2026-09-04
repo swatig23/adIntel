@@ -96,7 +96,7 @@ class CreateAgent:
             industry=industry or "general consumer",
             patterns_block=patterns_block,
         )
-        raw = await generate_text(prompt, system=COPY_SYSTEM)
+        raw = await generate_text(prompt, system=COPY_SYSTEM, json_mode=True)
         cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
         try:
             payload = json.loads(cleaned)
@@ -114,7 +114,7 @@ class CreateAgent:
             f"crisp lighting, brand-forward composition. No text or logos in the image."
         )
         try:
-            return await generate_image(prompt, out)
+            return await generate_image(prompt, out, timeout=4.0)
         except Exception as e:
             logger.info(f"[CreateAgent] API image gen unavailable ({e}); creating styled concept graphic")
             return self._draw_fallback_card(brand, idx, concept, out)

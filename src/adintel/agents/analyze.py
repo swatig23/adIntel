@@ -73,14 +73,16 @@ class AnalyzeAgent:
 
         if image_urls:
             try:
-                raw = await generate_from_multimodal(prompt, image_urls, system=SYSTEM_PROMPT)
+                raw = await generate_from_multimodal(
+                    prompt, image_urls, system=SYSTEM_PROMPT, json_mode=True
+                )
             except Exception as e:
                 logger.warning(
                     f"[AnalyzeAgent] Multimodal call unavailable ({e}); falling back to text copy analysis"
                 )
-                raw = await generate_text(prompt, system=SYSTEM_PROMPT)
+                raw = await generate_text(prompt, system=SYSTEM_PROMPT, json_mode=True)
         else:
-            raw = await generate_text(prompt, system=SYSTEM_PROMPT)
+            raw = await generate_text(prompt, system=SYSTEM_PROMPT, json_mode=True)
 
         return self._parse_patterns(raw)
 

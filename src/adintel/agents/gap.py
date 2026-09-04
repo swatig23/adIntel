@@ -66,7 +66,7 @@ class GapAgent:
         logger.info(
             f"[GapAgent] comparing {len(user_ads)} user ads against {len(patterns)} patterns"
         )
-        raw = await generate_text(prompt, system=SYSTEM_PROMPT)
+        raw = await generate_text(prompt, system=SYSTEM_PROMPT, json_mode=True)
         return self._parse(raw, patterns)
 
     @staticmethod

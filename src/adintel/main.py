@@ -25,6 +25,7 @@ from loguru import logger
 # Load .env before importing anything that reads settings
 load_dotenv()
 
+from .agents.adk_pipeline import run_via_adk  # noqa: E402
 from .agents.orchestrator import Orchestrator  # noqa: E402
 from .config import get_settings  # noqa: E402
 from .models import AnalysisRequest  # noqa: E402
@@ -50,6 +51,20 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 orchestrator = Orchestrator(creative_output_dir=CREATIVE_DIR)
 store = get_store()
+
+
+async def run_pipeline(req: AnalysisRequest):
+    """Runs the AdIntel pipeline via ADK's SequentialAgent by default, or
+    the plain functional Orchestrator if ADK_ENABLED=false in .env. Both
+    paths execute the identical six agents and return the same shape --
+    this is purely a routing decision, useful as an instant fallback if
+    ADK ever misbehaves mid-demo without touching any agent code.
+    """
+    if settings.adk_enabled:
+        logger.info('[main] routing through ADK SequentialAgent')
+        return await run_via_adk(req, creative_output_dir=CREATIVE_DIR)
+    logger.info('[main] routing through functional Orchestrator')
+    return await orchestrator.run(req)
 
 
 # ────────────────────────────────────────────────────────────────
@@ -86,7 +101,7 @@ async def analyze(
     )
 
     try:
-        report = await orchestrator.run(req)
+        report = await run_pipeline(req)
     except Exception as e:  # noqa: BLE001
         logger.exception("Pipeline failed")
         return templates.TemplateResponse(
@@ -126,6 +141,7 @@ async def healthz():
         "status": "ok",
         "data_source": settings.data_source,
         "using_stub": settings.use_meta_stub,
+        "orchestration_backend": "adk" if settings.adk_enabled else "functional",
         "storage_backend": type(store).__name__,
         "gcp_project_id_set": bool(settings.gcp_project_id),
         "google_api_key_set": bool(settings.google_api_key),

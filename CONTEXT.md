@@ -3,9 +3,82 @@
 **Purpose:** If token limits kill this chat session, a fresh session should be
 able to read this file + the codebase and pick up seamlessly.
 
-**Last updated:** 2026-09-03, ~2:30 AM IST
-**Deadline:** 8 PM IST today (Sept 3, 2026)
+**Last updated:** 2026-09-03, ~9 PM IST (post-merge)
+**Program:** Google Patchamomma 2026
 **User:** swati (backend dev @ Walmart, Warehouse Management Systems)
+
+## TIMELINE CORRECTION (important - read this first)
+
+Earlier work assumed a false "8 PM same-day" deadline. The ACTUAL program
+timeline (confirmed via official program email):
+
+| Milestone | Date |
+|---|---|
+| Start Build | Aug 15 (past) |
+| First Checkpoint | Aug 20 (past) |
+| **Second Checkpoint (Touchpoint 2)** | **Sep 3 - Google Form due within 48 hrs** |
+| Final Checkpoint | Sep 9 |
+| Lock Submission | Sep 10 (no extensions) |
+| Results | Before Sep 15 |
+| Finale | Sep 24 |
+
+Touchpoint 2 requires a Google Form (idea + tech stack) within 48 hours.
+A deployed app link is optional/bonus at this checkpoint. Real deploy
+pressure is the Sep 9 final checkpoint. No same-day hard deadline exists.
+
+## MERGE HISTORY (2026-09-03, ~9 PM IST)
+
+User was developing in parallel on TWO machines:
+1. This work laptop (Code Puppy sessions, `/Users/s0g09hc/Documents/swati/adintel`)
+2. A personal laptop (no Code Puppy access, manual debugging), pushed to
+   `https://github.com/swatig23/adIntel` as `adIntel-main`
+
+Both sides independently fixed the same problems (Gemini quota/rate-limit
+issues) with different, non-overlapping approaches. Rather than maintain
+two divergent codebases, **`adIntel-main` (personal laptop / GitHub) was
+adopted as the base** and this work-laptop copy was overwritten with it,
+then a handful of work-laptop-only docs/files were re-added on top.
+
+**What came from `adIntel-main` (now the source of truth):**
+- `clients/gemini.py` - full rewrite: instant fallback across a chain of
+  models (`gemini-3.5-flash` -> `gemini-3.1-flash-lite` -> `gemini-flash-lite-latest`)
+  on 429/503/500/502/504 errors, instead of retrying the same rate-limited
+  model. Learned in practice: free tier is ~5 RPM. Image generation retry
+  was deliberately disabled (comment: "free tier is limit 0").
+- `config.py` / `.env.example` - model names updated to `gemini-3.5-flash`
+  (text/vision) and `gemini-2.5-flash-image` (dropped `-preview` suffix)
+- `agents/analyze.py` - `max_images` default lowered 10->3; added a
+  try/except fallback so a failed multimodal/vision call retries as
+  text-only instead of failing the whole analysis
+- `agents/create.py` - added `_draw_fallback_card()`: if Nano Banana image
+  generation fails/is unavailable, draws a styled placeholder card with
+  PIL instead of dropping the creative entirely. Good demo-safety net.
+- `agents/orchestrator.py` - added explicit `asyncio.sleep(2)` pauses
+  between sequential LLM-calling stages, plus stage-start log lines
+- `main.py` - Jinja2 `TemplateResponse` calls updated to newer
+  keyword-argument API (`request=`, `name=`, `context=`)
+- `pyproject.toml` - added `pythonpath = ["src"]` to pytest config
+
+**What was re-added on top from the work-laptop side (not in `adIntel-main`):**
+- `Dockerfile` - for Cloud Run / Render deployment
+- `DEPLOY.md` - step-by-step deploy guide (gcloud + render.com fallback)
+- `TROUBLESHOOTING.md` - self-serve debugging guide for solo work
+- `scripts/test_gemini_connection.py` - standalone connectivity smoke test
+  (this already existed in `adIntel-main` too, kept as-is)
+- Timeline correction notes in this file and `PLAN.md` (you're reading one now)
+
+**Confirmed byte-identical between both sides (no merge needed):**
+`gap.py`, `report.py`, `ingest.py`, `longevity.py`, `models.py`, `storage.py`
+
+**Not yet done:** my work-laptop-side orchestrator improvements (per-stage
+timing instrumentation via `_timed()`, running Create+Report concurrently
+via `asyncio.gather`) were NOT carried forward in this merge, since
+`adIntel-main`'s orchestrator takes a different, learned-from-real-usage
+approach (explicit sleeps between sequential LLM calls to respect the
+~5 RPM free-tier limit). Concurrent Create+Report would undermine that
+pacing strategy. If you want timing visibility, consider adding just the
+`_timed()` logging wrapper (not the concurrency change) on top of the
+current sequential+sleep structure - TODO if useful later.
 
 ---
 

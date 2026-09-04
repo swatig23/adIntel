@@ -1,8 +1,27 @@
 # AdIntel - Plan of Attack
 
-**Deadline:** 8 PM IST today (Sept 3, 2026)
-**Scope locked:** "Cut BQ+MCP+CloudRun, ship safe"
-**Your available focused time:** ~4-5 hours across the day
+> **CORRECTED TIMELINE (2026-09-03):** The "8 PM today" deadline below was
+> based on an incorrect assumption, not the actual program schedule.
+> Official Google Patchamomma 2026 timeline (confirmed via program email):
+>
+> | Milestone | Date |
+> |---|---|
+> | Start Build | Aug 15 (past) |
+> | First Checkpoint | Aug 20 (past) |
+> | **Second Checkpoint (Touchpoint 2)** | **Sep 3 - Google Form due within 48 hrs** |
+> | Final Checkpoint | Sep 9 |
+> | Lock Submission | Sep 10 (no extensions) |
+> | Results | Before Sep 15 |
+> | Finale | Sep 24 |
+>
+> Touchpoint 2 needs a Google Form filled (idea + tech stack, same as
+> Touchpoint 1 if unchanged) within 48 hrs. A deployed app link is
+> OPTIONAL/bonus at this checkpoint. Real deploy pressure is the Sep 9
+> final checkpoint. Work at a sustainable pace across the week, not today.
+
+**Scope locked:** "Cut BQ+MCP+CloudRun, ship safe" (original framing; now
+relaxed across the week per corrected timeline above)
+**Your available focused time:** spread across the coming week
 
 > **Working without Code Puppy on your personal laptop?** Keep
 > `TROUBLESHOOTING.md` open in another tab — it covers the most likely

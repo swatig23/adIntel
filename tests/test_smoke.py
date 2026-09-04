@@ -9,6 +9,7 @@ import asyncio
 import os
 
 # Force stub mode before importing anything that reads settings
+os.environ["DATA_SOURCE"] = "meta_stub"
 os.environ["USE_META_STUB"] = "true"
 os.environ.setdefault("GOOGLE_API_KEY", "test-placeholder")
 
@@ -50,3 +51,15 @@ def test_stub_is_deterministic():
 
     a, b = asyncio.run(_fetch())
     assert [ad.id for ad in a[0].ads] == [ad.id for ad in b[0].ads]
+
+
+def test_adk_pipeline_assembly():
+    """Verify ADK SequentialAgent pipeline constructs all 6 nodes properly."""
+    from adintel.agents.adk_pipeline import build_adk_pipeline
+
+    pipeline = build_adk_pipeline()
+    assert pipeline.name == "adintel_pipeline"
+    assert len(pipeline.sub_agents) == 6
+    sub_names = [agent.name for agent in pipeline.sub_agents]
+    assert sub_names == ["ingest", "longevity", "analyze", "gap", "create", "report"]
+

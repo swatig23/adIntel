@@ -2,10 +2,10 @@
 :class:`SequentialAgent` composed of six :class:`BaseAgent` subclasses.
 
 This is the canonical multi-agent architecture for the hackathon submission.
-The functional Orchestrator in :mod:`orchestrator` remains available and is
-what the FastAPI app currently drives; the ADK path is exposed via
-:func:`build_adk_pipeline` and :func:`run_via_adk` for judges and future
-integrations (Runner, tracing, Cloud Trace, evaluation harness).
+The functional Orchestrator in :mod:`orchestrator` remains available as a
+fallback; the ADK path is exposed via :func:`build_adk_pipeline` and
+:func:`run_via_adk` and is what the FastAPI app drives by default (see
+``ADK_ENABLED`` in :mod:`config`).
 
 Each wrapper reads inputs from ``ctx.session.state`` and writes outputs back
 to the same state dict, so the pipeline stays purely declarative.
@@ -24,6 +24,7 @@ State keys:
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -42,6 +43,16 @@ from .ingest import IngestAgent
 from .longevity import LongevityAgent
 from .report import ReportAgent
 
+# Free-tier Gemini rate limits (~5 RPM) mean back-to-back LLM-calling nodes
+# need a breather between them. Keep this in sync with the equivalent pause
+# in orchestrator.py -- if you tune one, tune the other.
+INTER_STAGE_PAUSE_SECONDS = 0.5
+
+# Keep these in sync with Orchestrator's agent construction args -- both
+# were tuned down from higher defaults to respect free-tier quota limits.
+INGEST_PER_BRAND_LIMIT = 25
+ANALYZE_MAX_IMAGES = 3
+
 
 def _done_event(author: str, deltas: dict) -> Event:
     """Standard 'this agent finished, here are its state deltas' event."""
@@ -51,7 +62,7 @@ def _done_event(author: str, deltas: dict) -> Event:
     )
 
 
-# ─── Wrappers ───────────────────────────────────────────────────────────
+# --- Wrappers --------------------------------------------------------------
 
 
 class IngestNode(BaseAgent):
@@ -62,7 +73,7 @@ class IngestNode(BaseAgent):
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         state = ctx.session.state
         req: AnalysisRequest = state["request"]
-        ingest = IngestAgent(per_brand_limit=25)
+        ingest = IngestAgent(per_brand_limit=INGEST_PER_BRAND_LIMIT)
         all_brands = [req.user_brand] + req.competitors
         all_comp = await ingest.run(all_brands)
         deltas = {
@@ -85,9 +96,12 @@ class LongevityNode(BaseAgent):
 class AnalyzeNode(BaseAgent):
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         state = ctx.session.state
-        patterns = await AnalyzeAgent(max_images=10, top_k_patterns=6).run(state["winners"])
+        patterns = await AnalyzeAgent(
+            max_images=ANALYZE_MAX_IMAGES, top_k_patterns=6
+        ).run(state["winners"])
         state["patterns"] = patterns
         yield _done_event(self.name, {"patterns": patterns, "patterns_count": len(patterns)})
+        await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
 
 
 class GapNode(BaseAgent):
@@ -97,6 +111,7 @@ class GapNode(BaseAgent):
         gaps = await GapAgent().run(user.ads, state["patterns"])
         state["gaps"] = gaps
         yield _done_event(self.name, {"gaps": gaps, "gaps_count": len(gaps)})
+        await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
 
 
 class CreateNode(BaseAgent):
@@ -121,6 +136,7 @@ class CreateNode(BaseAgent):
         )
         state["creatives"] = creatives
         yield _done_event(self.name, {"creatives": creatives, "creatives_count": len(creatives)})
+        await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
 
 
 class ReportNode(BaseAgent):
@@ -137,7 +153,7 @@ class ReportNode(BaseAgent):
         yield _done_event(self.name, {"executive_summary": summary})
 
 
-# ─── Assembly ───────────────────────────────────────────────────────────
+# --- Assembly ----------------------------------------------------------
 
 
 def build_adk_pipeline(

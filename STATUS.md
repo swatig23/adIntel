@@ -1,7 +1,7 @@
 # AdIntel - Build Status
 
-**Snapshot:** 2026-09-03, 1:35 PM IST
-**Deadline:** 8 PM IST today
+**Snapshot:** 2026-09-03, 1:35 PM IST (personal laptop) + merged 9 PM IST (work laptop)
+**Real deadline:** Sep 9 final checkpoint, Sep 10 lock (see CONTEXT.md/PLAN.md for corrected Patchamomma 2026 timeline)
 
 Legend: `[x]` done & tested | `[~]` code written, needs live test | `[ ]` not started
 
@@ -75,11 +75,12 @@ Legend: `[x]` done & tested | `[~]` code written, needs live test | `[ ]` not st
 - [x] **Live tested with real Gemini** ✅
 
 ### Orchestration
-- [x] Functional pipeline: `agents/orchestrator.py` (currently used by FastAPI)
+- [x] Functional pipeline: `agents/orchestrator.py` (fallback backend)
 - [x] ADK SequentialAgent wrapper: `agents/adk_pipeline.py`
 - [x] All 6 agents wrapped as `BaseAgent` subclasses
-- [x] Full 6-node run validated ✅
-- [ ] **Wire FastAPI to `run_via_adk` instead of `Orchestrator`** (Next afternoon step)
+- [x] Full 6-node run validated 
+- [x] **FastAPI now routes through ADK by default** (`ADK_ENABLED=true` in config, toggle in `.env` to fall back to functional Orchestrator instantly if needed). Confirmed via `/healthz` -> `"orchestration_backend":"adk"`. Both backends tuned identically (per_brand_limit=25, max_images=3, 2s inter-stage pause for free-tier rate limits).
+- [ ] TODO: live end-to-end test of the ADK path with real Gemini calls (only the functional Orchestrator path has been live-tested so far; ADK path verified via unit-level pipeline construction + route wiring, not a full live run yet)
 
 ### Storage
 - [x] `LocalJsonStore` — active, writes to `data/analyses/*.json`
