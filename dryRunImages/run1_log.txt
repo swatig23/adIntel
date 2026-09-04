@@ -467,3 +467,4 @@ INFO:     127.0.0.1:52760 - "POST /analyze HTTP/1.1" 200 OK
 
 https://github.com/Dharani-kaligi/crop-recommendation-system-decision-tree
 https://glowmatch-smart-skincare-finder.ai.studio/
+sample submissions
