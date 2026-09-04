@@ -15,6 +15,7 @@ from adintel.models import (
 )
 from adintel.report_dashboard import (
     competitor_chart_data,
+    data_quality_summary,
     extract_headline,
     gap_coverage_chart_data,
     pattern_chart_data,
@@ -88,3 +89,36 @@ def test_competitor_chart_data_uses_real_winner_ids_not_stale_property():
     assert data["ads"] == [2, 1]
     # BMW has 2 ads but only a1 is a winner; Audi has 1 ad, a3 is a winner.
     assert data["winners"] == [1, 1]
+
+
+def test_data_quality_summary_reports_no_gaps_when_all_brands_have_ads():
+    report = _make_report()
+    dq = data_quality_summary(report)
+    assert dq["zero_ad_brands"] == []
+    assert dq["total_ads"] == 3
+    assert dq["is_empty"] is False
+    assert dq["is_partial"] is False
+
+
+def test_data_quality_summary_flags_brand_with_zero_ads():
+    report = _make_report()
+    report.competitors.append(Competitor(name="Tarzan", ads=[]))
+    dq = data_quality_summary(report)
+    assert dq["zero_ad_brands"] == ["Tarzan"]
+    assert dq["is_partial"] is True
+    assert dq["is_empty"] is False
+
+
+def test_data_quality_summary_flags_fully_empty_report():
+    req = AnalysisRequest(user_brand="Acme", competitors=["Tarzan"])
+    empty_report = AnalysisReport(
+        request=req,
+        competitors=[Competitor(name="Tarzan", ads=[])],
+        patterns=[],
+        gaps=[],
+        executive_summary="",
+        winner_ad_ids=[],
+    )
+    dq = data_quality_summary(empty_report)
+    assert dq["is_empty"] is True
+    assert dq["zero_ad_brands"] == ["Tarzan"]

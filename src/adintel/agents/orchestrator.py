@@ -44,18 +44,20 @@ class Orchestrator:
         # 2. Longevity filter — winners across competitors only (no LLM)
         winners = self.longevity.run(competitors)
 
-        # 3. Analyze — extract patterns from winners (LLM call)
+        # 3. Analyze — extract patterns from winners (LLM call, skipped if no winners)
         logger.info("[Orchestrator] calling AnalyzeAgent...")
         patterns = await self.analyze.run(winners)
 
-        # Brief 2s pause between LLM calls
-        await asyncio.sleep(2)
+        # Brief 2s pause between LLM calls -- skip if AnalyzeAgent short-circuited
+        if winners:
+            await asyncio.sleep(2)
 
-        # 4. Gap — compare user's ads vs patterns (LLM call)
+        # 4. Gap — compare user's ads vs patterns (LLM call, skipped if no patterns)
         logger.info("[Orchestrator] calling GapAgent...")
         gaps = await self.gap.run(user_competitor.ads, patterns)
 
-        await asyncio.sleep(2)
+        if patterns:
+            await asyncio.sleep(2)
 
         # 5. Create — new creatives (optional, gated by request flag; LLM call)
         creatives = []
@@ -66,7 +68,8 @@ class Orchestrator:
                 industry=request.industry_hint or "consumer",
                 patterns=patterns,
             )
-            await asyncio.sleep(2)
+            if patterns:
+                await asyncio.sleep(2)
 
         # 6. Report — narrative summary (LLM call)
         logger.info("[Orchestrator] calling ReportAgent...")

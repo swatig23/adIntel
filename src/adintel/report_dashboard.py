@@ -65,3 +65,22 @@ def competitor_chart_data(report: AnalysisReport) -> dict:
         "ads": [len(c.ads) for c in report.competitors],
         "winners": [len(report.winners_for(c)) for c in report.competitors],
     }
+
+
+def data_quality_summary(report: AnalysisReport) -> dict:
+    """Flags brands the data source had zero ads for, so the UI can say so
+    explicitly instead of silently rendering a hollow report (empty charts,
+    zero patterns, blank executive summary) with no indication of why.
+
+    A brand missing from the underlying dataset is a normal, expected
+    outcome for curated sources like the Kaggle transcripts table -- not a
+    bug -- but the user still deserves to know it happened.
+    """
+    zero_ad_brands = [c.name for c in report.competitors if not c.ads]
+    total_ads = sum(len(c.ads) for c in report.competitors)
+    return {
+        "zero_ad_brands": zero_ad_brands,
+        "total_ads": total_ads,
+        "is_empty": total_ads == 0,
+        "is_partial": bool(zero_ad_brands) and total_ads > 0,
+    }

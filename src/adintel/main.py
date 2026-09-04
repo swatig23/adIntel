@@ -32,6 +32,7 @@ from .markdown_lite import render_report_markdown  # noqa: E402
 from .models import AnalysisReport, AnalysisRequest  # noqa: E402
 from .report_dashboard import (  # noqa: E402
     competitor_chart_data,
+    data_quality_summary,
     extract_headline,
     gap_coverage_chart_data,
     pattern_chart_data,
@@ -75,6 +76,49 @@ async def run_pipeline(req: AnalysisRequest):
     return await orchestrator.run(req)
 
 
+def _friendly_error_context(exc: Exception) -> dict:
+    """Maps an internal exception to a short, user-safe message + a plain
+    English hint on what to try next. Never leaks tracebacks, file paths,
+    or raw API error bodies to the browser -- those stay in server logs
+    (see logger.exception call at the call site). Add new categories here
+    as new failure modes surface; keep the fallback branch last.
+    """
+    text = str(exc)
+
+    if "RESOURCE_EXHAUSTED" in text or "429" in text:
+        return {
+            "title": "Gemini quota reached",
+            "message": (
+                "We've hit the free-tier request limit for Gemini right now. "
+                "This resets daily -- try again shortly, or ask the team to "
+                "enable billing for higher limits."
+            ),
+        }
+    if "credentials" in text.lower() or "GOOGLE_API_KEY" in text:
+        return {
+            "title": "AI service not configured",
+            "message": (
+                "The server is missing a valid Gemini API key. This is a "
+                "configuration issue, not something you can fix from here."
+            ),
+        }
+    if "BigQuery" in text or "bigquery" in text.lower() or "gcp" in text.lower():
+        return {
+            "title": "Couldn't reach the ad data source",
+            "message": (
+                "We had trouble querying the competitor ad database. "
+                "Please try again in a moment."
+            ),
+        }
+    return {
+        "title": "Something went wrong",
+        "message": (
+            "We couldn't finish this analysis. Please try again, and double "
+            "check the brand names are spelled correctly."
+        ),
+    }
+
+
 def _report_context(report: AnalysisReport, report_id: str | None) -> dict:
     """Shared template context for both the fresh /analyze response and
     the persisted /report/{id} view -- keeps chart-data wiring in one
@@ -87,6 +131,7 @@ def _report_context(report: AnalysisReport, report_id: str | None) -> dict:
         "pattern_chart": pattern_chart_data(report),
         "gap_chart": gap_coverage_chart_data(report),
         "competitor_chart": competitor_chart_data(report),
+        "data_quality": data_quality_summary(report),
     }
 
 
@@ -133,11 +178,14 @@ async def analyze(
     try:
         report = await run_pipeline(req)
     except Exception as e:  # noqa: BLE001
+        # Full exception (with traceback) always goes to server logs only --
+        # raw internals (file paths, API error bodies, prompts) must never
+        # reach the browser. The user gets a short, actionable message.
         logger.exception("Pipeline failed")
         return templates.TemplateResponse(
             request=request,
             name="error.html",
-            context={"error": str(e)},
+            context=_friendly_error_context(e),
             status_code=500,
         )
 

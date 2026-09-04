@@ -96,22 +96,31 @@ class LongevityNode(BaseAgent):
 class AnalyzeNode(BaseAgent):
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         state = ctx.session.state
+        winners = state["winners"]
         patterns = await AnalyzeAgent(
             max_images=ANALYZE_MAX_IMAGES, top_k_patterns=6
-        ).run(state["winners"])
+        ).run(winners)
         state["patterns"] = patterns
         yield _done_event(self.name, {"patterns": patterns, "patterns_count": len(patterns)})
-        await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
+        # AnalyzeAgent short-circuits (no Gemini call) when there are no
+        # winning ads -- skip the rate-limit pause too in that case, since
+        # there's no quota to protect and no reason to make the user wait.
+        if winners:
+            await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
 
 
 class GapNode(BaseAgent):
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         state = ctx.session.state
         user = state["user_competitor"]
-        gaps = await GapAgent().run(user.ads, state["patterns"])
+        patterns = state["patterns"]
+        gaps = await GapAgent().run(user.ads, patterns)
         state["gaps"] = gaps
         yield _done_event(self.name, {"gaps": gaps, "gaps_count": len(gaps)})
-        await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
+        # GapAgent short-circuits (no Gemini call) when there are no
+        # patterns to compare against -- same reasoning as AnalyzeNode.
+        if patterns:
+            await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
 
 
 class CreateNode(BaseAgent):
@@ -129,14 +138,18 @@ class CreateNode(BaseAgent):
             return
 
         creator = CreateAgent(output_dir=self.output_dir, n_creatives=self.n_creatives)
+        patterns = state["patterns"]
         creatives = await creator.run(
             brand=req.user_brand,
             industry=req.industry_hint or "consumer",
-            patterns=state["patterns"],
+            patterns=patterns,
         )
         state["creatives"] = creatives
         yield _done_event(self.name, {"creatives": creatives, "creatives_count": len(creatives)})
-        await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
+        # CreateAgent short-circuits (no Gemini call) when there are no
+        # patterns to draw inspiration from -- same reasoning as above.
+        if patterns:
+            await asyncio.sleep(INTER_STAGE_PAUSE_SECONDS)
 
 
 class ReportNode(BaseAgent):

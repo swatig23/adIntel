@@ -130,7 +130,7 @@
               <input
                 name="user_brand"
                 required
-                placeholder="e.g., Warby Parker"
+                placeholder="e.g., BMW"
                 class="field-input w-full"
               />
             </div>
@@ -142,9 +142,16 @@
               <input
                 name="competitors"
                 required
-                placeholder="Ray-Ban, Zenni Optical"
+                placeholder="Audi, AutoZone"
                 class="field-input w-full"
               />
+              <p class="text-xs text-[var(--ink-soft)] mt-1.5">
+                {% if data_source == "bq_kaggle_transcripts" %}
+                Works best with well-known consumer brands already in our dataset (e.g. BMW, Audi, AutoZone, 7up).
+                {% else %}
+                Any brand name works in demo mode.
+                {% endif %}
+              </p>
             </div>
 
             <div>

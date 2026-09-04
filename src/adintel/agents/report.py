@@ -49,6 +49,33 @@ class ReportAgent:
         winner_count: int,
     ) -> str:
         total_ads = sum(len(c.ads) for c in competitors)
+
+        # No ads at all means nothing downstream had real data to work
+        # with -- Analyze/Gap/Create already skip cheaply in this case
+        # (see their own "no winning ads"/"no patterns" guards). Burning
+        # a Gemini call here to summarize an empty analysis wastes quota
+        # on output that's useless anyway, so we short-circuit instead.
+        if total_ads == 0:
+            logger.warning(
+                f"[ReportAgent] skipping Gemini call for {brand} -- 0 ads "
+                "ingested for any competitor, nothing to summarize"
+            )
+            names = ", ".join(c.name for c in competitors) or "the requested brands"
+            return (
+                "**Headline**\n"
+                f"No ads were found for {names} in the current data source.\n\n"
+                "**What's working for competitors**\n"
+                "We couldn't analyze this -- none of the requested brands had any "
+                "ads in the dataset.\n\n"
+                "**Your top 3 moves this week**\n"
+                "1. Double-check the brand names are spelled correctly.\n"
+                "2. Try a different, more widely-known brand.\n"
+                "3. Ask the team which brands the current data source covers.\n\n"
+                "**What NOT to do**\n"
+                "Don't treat this as a real competitive analysis -- there's no "
+                "underlying data behind it."
+            )
+
         winners = winner_count
 
         patterns_block = (
