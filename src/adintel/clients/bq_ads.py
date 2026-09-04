@@ -232,6 +232,47 @@ def _row_to_ad_kaggle(row: dict[str, Any]) -> Ad | None:
         return None
 
 
+def _row_to_ad_transcripts(row: dict[str, Any]) -> Ad | None:
+    """Mapper for the Kaggle 'Advertisement Transcripts from Various
+    Industries' dataset (kevinhartman0), uploaded to BQ as-is.
+
+    Exact schema (capitalized, verified against the real file):
+        Category, Advertiser, Product_or_spot, Ad_copy
+
+    This dataset has NO date/duration columns -- it's a curated "one
+    notable ad per brand" collection, not a time-series of running ads.
+    Every ad gets delivery_start=now() and delivery_stop=None, which
+    means LongevityAgent's default 90-day filter would silently drop
+    every single ad. Callers using this source MUST set
+    BQ_SKIP_LONGEVITY_FILTER=true (see config.py) so the pipeline treats
+    every fetched ad as a winner instead of date-filtering them out.
+    """
+    try:
+        advertiser = row.get("Advertiser") or "Unknown"
+        ad_copy = row.get("Ad_copy") or f"Ad by {advertiser}"
+        product = row.get("Product_or_spot") or ""
+
+        ad_id = hashlib.md5(f"{advertiser}|{product}|{ad_copy}".encode()).hexdigest()[:16]
+
+        return Ad(
+            id=ad_id,
+            page_name=str(advertiser),
+            page_id=hashlib.md5(str(advertiser).encode()).hexdigest()[:12],
+            creative_type=CreativeType.TEXT,  # transcripts are text-only, no image/video asset
+            body_text=str(ad_copy)[:2000],
+            cta=None,
+            link_caption=str(product) if product else None,
+            image_url=None,
+            platforms=[Platform.FACEBOOK],
+            delivery_start=datetime.now(timezone.utc),
+            delivery_stop=None,
+            snapshot_url=None,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"[bq_ads] transcripts row mapping failed: {e}")
+        return None
+
+
 # \u2500\u2500\u2500 Public API \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 
@@ -318,4 +359,52 @@ async def fetch_kaggle_ads_for_advertiser(advertiser_name: str, limit: int = 50)
     rows = await asyncio.to_thread(_run)
     ads = [ad for ad in (_row_to_ad_kaggle(r) for r in rows) if ad is not None]
     logger.info(f"[bq_ads:kaggle]   \u21b3 got {len(rows)} rows, mapped {len(ads)} ads")
+    return ads
+
+
+async def fetch_transcripts_ads_for_advertiser(advertiser_name: str, limit: int = 50) -> list[Ad]:
+    """Query the 'Advertisement Transcripts from Various Industries' BQ
+    table (uploaded from kevinhartman0's Kaggle dataset) for one advertiser.
+
+    Table schema is exact and known (unlike the generic bq_kaggle path):
+        Category, Advertiser, Product_or_spot, Ad_copy
+
+    Uses BQ_KAGGLE_TABLE for the table path -- same setting as bq_kaggle,
+    since a user only ever has one Kaggle table uploaded at a time. Set
+    DATA_SOURCE=bq_kaggle_transcripts to route here instead of the
+    generic tolerant mapper.
+    """
+    settings = get_settings()
+    if not settings.gcp_project_id:
+        raise RuntimeError("GCP_PROJECT_ID not set")
+    if not settings.bq_kaggle_table:
+        raise RuntimeError("BQ_KAGGLE_TABLE not set")
+
+    table = settings.bq_kaggle_table
+    sql = f"""
+        SELECT Category, Advertiser, Product_or_spot, Ad_copy
+        FROM `{table}`
+        WHERE LOWER(Advertiser) LIKE LOWER(@needle)
+        LIMIT @limit
+    """
+
+    def _run() -> list[dict[str, Any]]:
+        from google.cloud import bigquery
+
+        client = _get_client(settings.gcp_project_id)
+        job = client.query(
+            sql,
+            job_config=bigquery.QueryJobConfig(
+                query_parameters=[
+                    bigquery.ScalarQueryParameter("needle", "STRING", f"%{advertiser_name}%"),
+                    bigquery.ScalarQueryParameter("limit", "INT64", limit),
+                ]
+            ),
+        )
+        return [dict(r) for r in job.result()]
+
+    logger.info(f"[bq_ads:transcripts] querying {table} for '{advertiser_name}' (limit {limit})")
+    rows = await asyncio.to_thread(_run)
+    ads = [ad for ad in (_row_to_ad_transcripts(r) for r in rows) if ad is not None]
+    logger.info(f"[bq_ads:transcripts]   \u21b3 got {len(rows)} rows, mapped {len(ads)} ads")
     return ads

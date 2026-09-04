@@ -7,8 +7,11 @@ Backends supported:
 
 * ``meta_stub``    \u2014 :func:`clients.meta_ads.fetch_ads_for_brand` (default)
 * ``meta_live``    \u2014 same module, live API mode (needs META_ACCESS_TOKEN)
-* ``bq_political`` \u2014 :func:`clients.bq_ads.fetch_political_ads_for_advertiser`
-* ``bq_kaggle``    \u2014 :func:`clients.bq_ads.fetch_kaggle_ads_for_advertiser`
+* ``bq_political``          \u2014 :func:`clients.bq_ads.fetch_political_ads_for_advertiser`
+* ``bq_kaggle``             \u2014 :func:`clients.bq_ads.fetch_kaggle_ads_for_advertiser` (generic, tolerant)
+* ``bq_kaggle_transcripts`` \u2014 :func:`clients.bq_ads.fetch_transcripts_ads_for_advertiser`
+  (exact schema for the 'Advertisement Transcripts from Various
+  Industries' dataset -- real commercial ad copy, 1348 brands, no dates)
 
 All backends return identical ``list[Ad]`` shape so downstream agents
 never need to care which source was used.
@@ -22,7 +25,7 @@ from ..config import get_settings
 from ..models import Ad
 from . import bq_ads, meta_ads
 
-_VALID_SOURCES = {"meta_stub", "meta_live", "bq_political", "bq_kaggle"}
+_VALID_SOURCES = {"meta_stub", "meta_live", "bq_political", "bq_kaggle", "bq_kaggle_transcripts"}
 
 
 async def fetch_ads_for_brand(brand: str, limit: int | None = None) -> list[Ad]:
@@ -56,6 +59,11 @@ async def fetch_ads_for_brand(brand: str, limit: int | None = None) -> list[Ad]:
 
     if source == "bq_kaggle":
         return await bq_ads.fetch_kaggle_ads_for_advertiser(
+            brand, limit=limit or settings.bq_limit_per_brand
+        )
+
+    if source == "bq_kaggle_transcripts":
+        return await bq_ads.fetch_transcripts_ads_for_advertiser(
             brand, limit=limit or settings.bq_limit_per_brand
         )
 
