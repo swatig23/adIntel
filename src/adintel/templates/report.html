@@ -1,26 +1,34 @@
-<!-- HTMX partial: full report, bold colorful theme -->
+<!-- HTMX partial: dashboard-style report.
+Product design: a marketer scans this in 5 seconds -- headline insight,
+three charts, done. Full narrative/per-item detail is one click away
+via <details> instead of being the first thing on the page. -->
 <div class="space-y-6">
 
-  <!-- Executive Summary -->
+  <!-- Headline -->
   <section class="bg-gradient-to-br from-[var(--violet)] to-[var(--fuchsia)] rounded-2xl p-6 text-white shadow-xl shadow-violet-300/50">
-    <p class="text-xs uppercase tracking-widest opacity-80 mb-2 font-bold">Executive Summary</p>
-    <div class="display text-lg leading-relaxed whitespace-pre-wrap font-medium">{{ report.executive_summary | report_md | safe }}</div>
+    <p class="text-xs uppercase tracking-widest opacity-80 mb-2 font-bold">Biggest Opportunity</p>
+    <p class="display text-2xl font-bold leading-snug">{{ headline }}</p>
+    <details class="mt-4 group">
+      <summary class="text-xs uppercase tracking-wider font-semibold cursor-pointer opacity-90 hover:opacity-100 select-none list-none flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        Read full analysis
+      </summary>
+      <div class="mt-3 pt-3 border-t border-white/25 text-sm leading-relaxed whitespace-pre-wrap opacity-95">{{ report.executive_summary | report_md | safe }}</div>
+    </details>
   </section>
 
   <!-- Stats strip -->
   <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-    {% set total_ads = report.competitors | map(attribute='ads') | map('length') | sum %}
-    {% set total_winners = report.winner_count %}
     <div class="card card-shadow p-4 text-center">
       <div class="display text-2xl font-extrabold">{{ report.competitors | length }}</div>
       <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium">Competitors</div>
     </div>
     <div class="card card-shadow p-4 text-center">
-      <div class="display text-2xl font-extrabold">{{ total_ads }}</div>
+      <div class="display text-2xl font-extrabold">{{ competitor_chart.ads | sum }}</div>
       <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium">Ads Analyzed</div>
     </div>
     <div class="rounded-2xl p-4 text-center shadow-md shadow-amber-200" style="background: var(--amber);">
-      <div class="display text-2xl font-extrabold text-white">{{ total_winners }}</div>
+      <div class="display text-2xl font-extrabold text-white">{{ report.winner_count }}</div>
       <div class="text-xs text-white/90 mt-1 font-medium">Proven Winners</div>
     </div>
     <div class="card card-shadow p-4 text-center">
@@ -29,37 +37,44 @@
     </div>
   </section>
 
-  <!-- Winning Patterns -->
-  {% if report.patterns %}
-  <section class="card card-shadow p-6">
-    <h2 class="display font-bold text-xl mb-1">Winning Patterns</h2>
-    <p class="text-sm text-[var(--ink-soft)] mb-5">Extracted by Gemini 2.5 from {{ total_winners }} proven-winner ads.</p>
-    <div class="space-y-3">
-      {% for p in report.patterns %}
-      <div class="flex items-start gap-4 bg-violet-50 rounded-xl p-4">
-        <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--violet)] text-white font-bold uppercase whitespace-nowrap flex-shrink-0 mt-0.5">{{ p.category }}</span>
-        <div class="flex-1">
-          <p class="text-[var(--ink)]">{{ p.description }}</p>
-          <div class="mt-2 flex items-center gap-3">
-            <div class="flex-1 h-1.5 bg-white rounded-full overflow-hidden max-w-xs">
-              <div class="h-full bg-gradient-to-r from-[var(--violet)] to-[var(--fuchsia)]" style="width: {{ p.frequency_pct }}%"></div>
-            </div>
-            <span class="text-xs text-[var(--ink-soft)] whitespace-nowrap font-medium">{{ "%.0f"|format(p.frequency_pct) }}% of winners</span>
-          </div>
-        </div>
+  <!-- Charts row -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+    <!-- Winning patterns -->
+    <div class="card card-shadow p-5 lg:col-span-2">
+      <h2 class="display font-bold text-base mb-1">Winning Patterns</h2>
+      <p class="text-xs text-[var(--ink-soft)] mb-3">How often each pattern shows up across proven-winner ads.</p>
+      <div class="h-56">
+        <canvas id="patternChart"></canvas>
       </div>
-      {% endfor %}
+    </div>
+
+    <!-- Gap coverage donut -->
+    <div class="card card-shadow p-5">
+      <h2 class="display font-bold text-base mb-1">Your Coverage</h2>
+      <p class="text-xs text-[var(--ink-soft)] mb-3">Winning patterns you already use vs. gaps to close.</p>
+      <div class="h-56">
+        <canvas id="gapChart"></canvas>
+      </div>
     </div>
   </section>
-  {% endif %}
 
-  <!-- Priority Gaps -->
+  <!-- Competitor comparison -->
+  <section class="card card-shadow p-5">
+    <h2 class="display font-bold text-base mb-1">Competitor Comparison</h2>
+    <p class="text-xs text-[var(--ink-soft)] mb-3">Ads analyzed vs. proven winners, per competitor.</p>
+    <div class="h-64">
+      <canvas id="competitorChart"></canvas>
+    </div>
+  </section>
+
+  <!-- Priority Gaps: top 3 visible, rest behind disclosure -->
   {% if report.gaps %}
   <section class="card card-shadow p-6">
-    <h2 class="display font-bold text-xl mb-1">Your Priority Gaps</h2>
-    <p class="text-sm text-[var(--ink-soft)] mb-5">What to fix first, ranked by impact.</p>
+    <h2 class="display font-bold text-xl mb-1">Your Priority Moves</h2>
+    <p class="text-sm text-[var(--ink-soft)] mb-5">Top actions, ranked by impact.</p>
     <div class="space-y-3">
-      {% for g in report.gaps[:8] %}
+      {% for g in report.gaps[:3] %}
       <div class="flex items-start gap-4 rounded-xl p-4 {% if g.user_has %}bg-emerald-50{% else %}bg-amber-50{% endif %}">
         <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white text-sm {% if g.user_has %}bg-emerald-500{% else %}bg-amber-500{% endif %}">
           P{{ g.priority }}
@@ -67,15 +82,9 @@
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-1">
             {% if g.user_has %}
-              <span class="text-xs font-bold text-emerald-700 flex items-center gap-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                Already doing this
-              </span>
+              <span class="text-xs font-bold text-emerald-700">Already Doing</span>
             {% else %}
-              <span class="text-xs font-bold text-amber-700 flex items-center gap-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                Gap detected
-              </span>
+              <span class="text-xs font-bold text-amber-700">Gap Detected</span>
             {% endif %}
             <span class="text-xs text-[var(--ink-soft)]">&middot; {{ g.pattern.category }}</span>
           </div>
@@ -84,6 +93,34 @@
       </div>
       {% endfor %}
     </div>
+    {% if report.gaps | length > 3 %}
+    <details class="mt-4 group">
+      <summary class="text-xs uppercase tracking-wider font-semibold cursor-pointer text-[var(--violet)] select-none list-none flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        Show {{ report.gaps | length - 3 }} more
+      </summary>
+      <div class="mt-3 space-y-3">
+        {% for g in report.gaps[3:8] %}
+        <div class="flex items-start gap-4 rounded-xl p-4 {% if g.user_has %}bg-emerald-50{% else %}bg-amber-50{% endif %}">
+          <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white text-sm {% if g.user_has %}bg-emerald-500{% else %}bg-amber-500{% endif %}">
+            P{{ g.priority }}
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              {% if g.user_has %}
+                <span class="text-xs font-bold text-emerald-700">Already Doing</span>
+              {% else %}
+                <span class="text-xs font-bold text-amber-700">Gap Detected</span>
+              {% endif %}
+              <span class="text-xs text-[var(--ink-soft)]">&middot; {{ g.pattern.category }}</span>
+            </div>
+            <p class="text-[var(--ink)] font-medium">{{ g.recommendation }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
   </section>
   {% endif %}
 
@@ -113,7 +150,31 @@
   </section>
   {% endif %}
 
-  <!-- Competitor breakdown -->
+  <!-- Full pattern list, behind disclosure since the chart above already
+       shows the shape of the data -->
+  {% if report.patterns %}
+  <section class="card card-shadow p-6">
+    <details class="group">
+      <summary class="display font-bold text-xl cursor-pointer select-none list-none flex items-center gap-2">
+        <svg class="w-5 h-5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        All Winning Patterns ({{ report.patterns | length }})
+      </summary>
+      <div class="mt-4 space-y-3">
+        {% for p in report.patterns %}
+        <div class="flex items-start gap-4 bg-violet-50 rounded-xl p-4">
+          <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--violet)] text-white font-bold uppercase whitespace-nowrap flex-shrink-0 mt-0.5">{{ p.category }}</span>
+          <div class="flex-1">
+            <p class="text-[var(--ink)]">{{ p.description }}</p>
+            <p class="text-xs text-[var(--ink-soft)] mt-1 font-medium">{{ "%.0f"|format(p.frequency_pct) }}% of winners</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+  </section>
+  {% endif %}
+
+  <!-- Competitor breakdown table -->
   <section class="card card-shadow p-6">
     <h2 class="display font-bold text-xl mb-5">Competitor Breakdown</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -130,3 +191,70 @@
   </section>
 
 </div>
+
+<script>
+(function () {
+  const patternData = {{ pattern_chart | tojson }};
+  const gapData = {{ gap_chart | tojson }};
+  const competitorData = {{ competitor_chart | tojson }};
+
+  const VIOLET = '#7c3aed';
+  const FUCHSIA = '#d946ef';
+  const AMBER = '#f59e0b';
+  const EMERALD = '#10b981';
+
+  new Chart(document.getElementById('patternChart'), {
+    type: 'bar',
+    data: {
+      labels: patternData.labels,
+      datasets: [{
+        label: '% of winning ads',
+        data: patternData.data,
+        backgroundColor: VIOLET,
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { max: 100, ticks: { callback: (v) => v + '%' } } },
+    },
+  });
+
+  new Chart(document.getElementById('gapChart'), {
+    type: 'doughnut',
+    data: {
+      labels: gapData.labels,
+      datasets: [{
+        data: gapData.data,
+        backgroundColor: [EMERALD, AMBER],
+        borderWidth: 0,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+    },
+  });
+
+  new Chart(document.getElementById('competitorChart'), {
+    type: 'bar',
+    data: {
+      labels: competitorData.labels,
+      datasets: [
+        { label: 'Ads Analyzed', data: competitorData.ads, backgroundColor: '#c4b5fd', borderRadius: 6 },
+        { label: 'Proven Winners', data: competitorData.winners, backgroundColor: FUCHSIA, borderRadius: 6 },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+    },
+  });
+})();
+</script>

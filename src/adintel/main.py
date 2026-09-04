@@ -29,7 +29,13 @@ from .agents.adk_pipeline import run_via_adk  # noqa: E402
 from .agents.orchestrator import Orchestrator  # noqa: E402
 from .config import get_settings  # noqa: E402
 from .markdown_lite import render_report_markdown  # noqa: E402
-from .models import AnalysisRequest  # noqa: E402
+from .models import AnalysisReport, AnalysisRequest  # noqa: E402
+from .report_dashboard import (  # noqa: E402
+    competitor_chart_data,
+    extract_headline,
+    gap_coverage_chart_data,
+    pattern_chart_data,
+)
 from .storage import get_store  # noqa: E402
 
 # ────────────────────────────────────────────────────────────────
@@ -67,6 +73,21 @@ async def run_pipeline(req: AnalysisRequest):
         return await run_via_adk(req, creative_output_dir=CREATIVE_DIR)
     logger.info('[main] routing through functional Orchestrator')
     return await orchestrator.run(req)
+
+
+def _report_context(report: AnalysisReport, report_id: str | None) -> dict:
+    """Shared template context for both the fresh /analyze response and
+    the persisted /report/{id} view -- keeps chart-data wiring in one
+    place instead of duplicated across two routes.
+    """
+    return {
+        "report": report,
+        "report_id": report_id,
+        "headline": extract_headline(report.executive_summary),
+        "pattern_chart": pattern_chart_data(report),
+        "gap_chart": gap_coverage_chart_data(report),
+        "competitor_chart": competitor_chart_data(report),
+    }
 
 
 # ────────────────────────────────────────────────────────────────
@@ -130,7 +151,7 @@ async def analyze(
     return templates.TemplateResponse(
         request=request,
         name="report.html",
-        context={"report": report, "report_id": report_id},
+        context=_report_context(report, report_id),
     )
 
 
@@ -175,5 +196,5 @@ async def view_report(request: Request, report_id: str):
     return templates.TemplateResponse(
         request=request,
         name="report_page.html",
-        context={"report": report, "report_id": report_id},
+        context=_report_context(report, report_id),
     )
