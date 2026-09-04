@@ -5,7 +5,7 @@ via <details> instead of being the first thing on the page. -->
 <div class="space-y-6">
 
   <!-- Headline -->
-  <section class="bg-gradient-to-br from-[var(--violet)] to-[var(--fuchsia)] rounded-2xl p-6 text-white shadow-xl shadow-violet-300/50">
+  <section class="bg-gradient-to-br from-[var(--violet)] to-[var(--fuchsia)] rounded-2xl p-6 text-white shadow-xl shadow-black/10">
     <p class="text-xs uppercase tracking-widest opacity-80 mb-2 font-bold">Biggest Opportunity</p>
     <p class="display text-2xl font-bold leading-snug">{{ headline }}</p>
     <details class="mt-4 group">
@@ -131,7 +131,7 @@ via <details> instead of being the first thing on the page. -->
     <p class="text-sm text-[var(--ink-soft)] mb-5">Generated with Nano Banana, informed by winning patterns above.</p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       {% for c in report.generated_creatives %}
-      <div class="rounded-xl overflow-hidden bg-violet-50">
+      <div class="rounded-xl overflow-hidden bg-[#f1e4e0]">
         <img src="/creatives/{{ c.filename }}" alt="Generated creative" class="w-full aspect-square object-cover" />
         <div class="p-4 space-y-2">
           <p class="display font-bold text-[var(--ink)]">{{ c.hook }}</p>
@@ -161,7 +161,7 @@ via <details> instead of being the first thing on the page. -->
       </summary>
       <div class="mt-4 space-y-3">
         {% for p in report.patterns %}
-        <div class="flex items-start gap-4 bg-violet-50 rounded-xl p-4">
+        <div class="flex items-start gap-4 bg-[#f1e4e0] rounded-xl p-4">
           <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--violet)] text-white font-bold uppercase whitespace-nowrap flex-shrink-0 mt-0.5">{{ p.category }}</span>
           <div class="flex-1">
             <p class="text-[var(--ink)]">{{ p.description }}</p>
@@ -179,7 +179,7 @@ via <details> instead of being the first thing on the page. -->
     <h2 class="display font-bold text-xl mb-5">Competitor Breakdown</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       {% for c in report.competitors %}
-      <div class="bg-violet-50 rounded-xl p-4">
+      <div class="bg-[#f1e4e0] rounded-xl p-4">
         <div class="flex items-center justify-between mb-1">
           <h3 class="display font-bold">{{ c.name }}</h3>
           <span class="text-xs px-2 py-0.5 rounded-full bg-white text-[var(--ink-soft)] font-medium">{{ c.ads | length }} ads</span>
@@ -198,10 +198,10 @@ via <details> instead of being the first thing on the page. -->
   const gapData = {{ gap_chart | tojson }};
   const competitorData = {{ competitor_chart | tojson }};
 
-  const VIOLET = '#7c3aed';
-  const FUCHSIA = '#d946ef';
-  const AMBER = '#f59e0b';
-  const EMERALD = '#10b981';
+  const VIOLET = '#7a2e2e';
+  const FUCHSIA = '#b5533c';
+  const AMBER = '#b8860b';
+  const EMERALD = '#2f7a4f';
 
   new Chart(document.getElementById('patternChart'), {
     type: 'bar',
@@ -245,7 +245,7 @@ via <details> instead of being the first thing on the page. -->
     data: {
       labels: competitorData.labels,
       datasets: [
-        { label: 'Ads Analyzed', data: competitorData.ads, backgroundColor: '#c4b5fd', borderRadius: 6 },
+        { label: 'Ads Analyzed', data: competitorData.ads, backgroundColor: '#d8b8a8', borderRadius: 6 },
         { label: 'Proven Winners', data: competitorData.winners, backgroundColor: FUCHSIA, borderRadius: 6 },
       ],
     },

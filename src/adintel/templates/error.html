@@ -4,20 +4,20 @@
   <title>Error</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family:'Inter',system-ui,sans-serif; background:#f5f3ff; color:#1e1b2e; }
-    .display { font-family:'Sora',system-ui,sans-serif; }
+    body { font-family:'Source Sans 3',system-ui,sans-serif; background:#faf7f0; color:#1c1a17; }
+    .display { font-family:'Playfair Display',Georgia,serif; }
   </style>
 </head>
 <body class="p-10">
-  <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg shadow-red-100 p-6">
-    <h1 class="display text-xl font-bold mb-4 flex items-center gap-2 text-red-600">
+  <div class="max-w-2xl mx-auto bg-white rounded-xl border border-[#e4ddc9] shadow-sm p-6">
+    <h1 class="display text-xl font-bold mb-4 flex items-center gap-2 text-[#7a2e2e]">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
       Pipeline Error
     </h1>
-    <pre class="text-sm bg-red-50 border border-red-100 p-4 rounded-xl overflow-auto text-red-900">{{ error }}</pre>
-    <a href="/" class="mt-4 inline-block text-[#7c3aed] font-semibold hover:underline">&larr; Back</a>
+    <pre class="text-sm bg-[#f1e4e0] border border-[#e4ddc9] p-4 rounded-lg overflow-auto text-[#1c1a17]">{{ error }}</pre>
+    <a href="/" class="mt-4 inline-block text-[#7a2e2e] font-semibold hover:underline">&larr; Back</a>
   </div>
 </body>
 </html>

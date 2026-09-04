@@ -8,31 +8,31 @@
   <script src="https://unpkg.com/htmx.org@2.0.3"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f5f3ff;
-      --ink: #1e1b2e;
-      --ink-soft: #6b6580;
-      --violet: #7c3aed;
-      --violet-dark: #6d28d9;
-      --fuchsia: #d946ef;
-      --amber: #f59e0b;
+      --bg: #faf7f0;
+      --ink: #1c1a17;
+      --ink-soft: #57534a;
+      --violet: #7a2e2e;
+      --violet-dark: #5f2323;
+      --fuchsia: #b5533c;
+      --amber: #b8860b;
     }
     body {
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Source Sans 3', system-ui, sans-serif;
       background: var(--bg);
       color: var(--ink);
     }
-    .display { font-family: 'Sora', system-ui, sans-serif; }
+    .display { font-family: 'Playfair Display', Georgia, serif; }
 
-    .card { background: #fff; border-radius: 1.25rem; }
-    .card-shadow { box-shadow: 0 4px 24px rgba(124, 58, 237, 0.08); }
+    .card { background: #fff; border-radius: 0.75rem; border: 1px solid #e4ddc9; }
+    .card-shadow { box-shadow: 0 2px 12px rgba(28, 26, 23, 0.05); }
 
     .field-input {
-      background: #f5f3ff;
+      background: #f1ece0;
       border: 2px solid transparent;
-      border-radius: 0.75rem;
+      border-radius: 0.5rem;
       padding: 0.65rem 0.9rem;
       transition: border-color 0.15s ease;
       color: var(--ink);
@@ -45,13 +45,13 @@
     .submit-btn {
       background: var(--violet);
       color: #fff;
-      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+      box-shadow: 0 4px 14px rgba(122, 46, 46, 0.3);
       transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
     }
     .submit-btn:hover { background: var(--violet-dark); }
     .submit-btn:active {
       transform: scale(0.97) translateY(1px);
-      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+      box-shadow: 0 2px 8px rgba(122, 46, 46, 0.4);
     }
     .htmx-request .submit-btn,
     .submit-btn.htmx-request {
@@ -188,7 +188,7 @@
         <!-- Fun animated progress overlay, shown only while HTMX request is in flight -->
         <div id="progress-overlay" class="mt-6 pt-6 border-t border-[var(--bg)]">
           <div class="flex items-center gap-3 mb-4">
-            <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center animate-pulse flex-shrink-0">
+            <div class="w-8 h-8 rounded-full bg-[#f1e4e0] flex items-center justify-center animate-pulse flex-shrink-0">
               <svg class="w-4 h-4 text-[var(--violet)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
