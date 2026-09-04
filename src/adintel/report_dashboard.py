@@ -21,7 +21,7 @@ from .models import AnalysisReport
 
 def extract_headline(executive_summary: str) -> str:
     """Pulls just the one-sentence headline out of ReportAgent's markdown
-    output (see agents/report.py's PROMPT, section 1 "**Headline**").
+    output (see agents/report.py's PROMPT, section "**Headline**").
 
     Falls back to the first non-empty line if the expected markdown
     structure isn't present, so this never crashes on unexpected LLM
@@ -40,6 +40,23 @@ def extract_headline(executive_summary: str) -> str:
         if stripped:
             return stripped
     return ""
+
+
+def extract_strategy_name(executive_summary: str) -> str:
+    """Pulls the punchy 2-5 word strategy name out of ReportAgent's markdown
+    output (see agents/report.py's PROMPT, section "**Strategy Name**").
+
+    Unlike extract_headline, this has NO fallback to the first line -- a
+    stray sentence mistaken for a strategy name would look worse than just
+    not showing one. Returns empty string if the section isn't present,
+    and the template simply omits the name badge in that case.
+    """
+    match = re.search(
+        r"\*\*Strategy Name\*\*\s*\n+(.+?)(?:\n\n|\n\*\*|$)",
+        executive_summary,
+        re.DOTALL,
+    )
+    return match.group(1).strip() if match else ""
 
 
 def pattern_chart_data(report: AnalysisReport) -> dict:

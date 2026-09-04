@@ -34,6 +34,7 @@ from .report_dashboard import (  # noqa: E402
     competitor_chart_data,
     data_quality_summary,
     extract_headline,
+    extract_strategy_name,
     gap_coverage_chart_data,
     pattern_chart_data,
 )
@@ -128,10 +129,16 @@ def _report_context(report: AnalysisReport, report_id: str | None) -> dict:
         "report": report,
         "report_id": report_id,
         "headline": extract_headline(report.executive_summary),
+        "strategy_name": extract_strategy_name(report.executive_summary),
         "pattern_chart": pattern_chart_data(report),
         "gap_chart": gap_coverage_chart_data(report),
         "competitor_chart": competitor_chart_data(report),
         "data_quality": data_quality_summary(report),
+        # When the active data source has no delivery-date signal (see
+        # BQ_SKIP_LONGEVITY_FILTER), "winner" isn't a measured outcome --
+        # every ad passes through untouched. The UI must say so plainly
+        # instead of implying a performance judgment the data can't back.
+        "winners_are_proxy_only": settings.bq_skip_longevity_filter,
     }
 
 

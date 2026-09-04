@@ -17,6 +17,7 @@ from adintel.report_dashboard import (
     competitor_chart_data,
     data_quality_summary,
     extract_headline,
+    extract_strategy_name,
     gap_coverage_chart_data,
     pattern_chart_data,
 )
@@ -48,6 +49,7 @@ def _make_report() -> AnalysisReport:
         patterns=[pattern1, pattern2],
         gaps=[gap1, gap2],
         executive_summary=(
+            "**Strategy Name**\nThe Bold Contrast Play\n\n"
             "**Headline**\nBold contrast messaging is your biggest lever.\n\n"
             "**What's working**\nCompetitors lean aspirational."
         ),
@@ -66,6 +68,21 @@ def test_extract_headline_falls_back_to_first_line_on_unexpected_format():
 
 def test_extract_headline_handles_empty_string():
     assert extract_headline("") == ""
+
+
+def test_extract_strategy_name_pulls_the_strategy_name_section():
+    report = _make_report()
+    assert extract_strategy_name(report.executive_summary) == "The Bold Contrast Play"
+
+
+def test_extract_strategy_name_returns_empty_when_section_missing():
+    # Unlike extract_headline, no first-line fallback -- a random sentence
+    # mistaken for a strategy name would look worse than showing nothing.
+    assert extract_strategy_name("**Headline**\nJust a headline, no strategy name.") == ""
+
+
+def test_extract_strategy_name_handles_empty_string():
+    assert extract_strategy_name("") == ""
 
 
 def test_pattern_chart_data_formats_category_labels():

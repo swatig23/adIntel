@@ -42,6 +42,7 @@ async def test_skips_gemini_call_when_no_ads_at_all(monkeypatch):
     assert "Tarzan" in summary
     assert "RayBan" in summary
     assert "No ads were found" in summary
+    assert "**Strategy Name**" in summary  # keeps parsing consistent w/ real Gemini output
 
 
 @pytest.mark.asyncio

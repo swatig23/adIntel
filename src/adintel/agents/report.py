@@ -30,10 +30,14 @@ Priority gaps for {brand} to close:
 {gaps_block}
 
 Structure your response:
-1. **Headline** (one sentence — the single most important insight)
-2. **What's working for competitors** (2-3 sentences)
-3. **Your top 3 moves this week** (numbered list; each starts with an action verb)
-4. **What NOT to do** (one sentence based on the analysis)
+1. **Strategy Name** (a punchy, memorable 2-5 word name for the recommended
+   strategy, styled like a named marketing playbook -- e.g. "The Bold Proof
+   Play" or "The Social Trust Sprint". Must be grounded in the actual
+   top pattern below, not generic.)
+2. **Headline** (one sentence -- the single most important insight)
+3. **What's working for competitors** (2-3 sentences)
+4. **Your top 3 moves this week** (numbered list; each starts with an action verb)
+5. **What NOT to do** (one sentence based on the analysis)
 
 Keep it under 220 words. No preamble. No sign-off.
 """
@@ -62,6 +66,7 @@ class ReportAgent:
             )
             names = ", ".join(c.name for c in competitors) or "the requested brands"
             return (
+                "**Strategy Name**\nNo Data, No Strategy\n\n"
                 "**Headline**\n"
                 f"No ads were found for {names} in the current data source.\n\n"
                 "**What's working for competitors**\n"

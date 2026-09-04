@@ -19,6 +19,11 @@ via <details> instead of being the first thing on the page. -->
 
   <!-- Headline -->
   <section class="bg-gradient-to-br from-[var(--violet)] to-[var(--fuchsia)] rounded-2xl p-6 text-white shadow-xl shadow-black/10">
+    {% if strategy_name %}
+    <div class="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-bold uppercase tracking-wider mb-3">
+      {{ strategy_name }}
+    </div>
+    {% endif %}
     <p class="text-xs uppercase tracking-widest opacity-80 mb-2 font-bold">Biggest Opportunity</p>
     <p class="display text-2xl font-bold leading-snug">{{ headline }}</p>
     <details class="mt-4 group">
@@ -42,7 +47,15 @@ via <details> instead of being the first thing on the page. -->
     </div>
     <div class="rounded-2xl p-4 text-center shadow-md shadow-amber-200" style="background: var(--amber);">
       <div class="display text-2xl font-extrabold text-white">{{ report.winner_count }}</div>
-      <div class="text-xs text-white/90 mt-1 font-medium">Proven Winners</div>
+      <div class="text-xs text-white/90 mt-1 font-medium flex items-center justify-center gap-1">
+        {% if winners_are_proxy_only %}
+        Ads Analyzed
+        <span class="cursor-help" title="This data source has no delivery-date history, so every ad is counted here -- winner status couldn't be measured for this run.">&#9432;</span>
+        {% else %}
+        Proven Winners
+        <span class="cursor-help" title="Ads that have run 90+ days without stopping -- a strong signal the advertiser is still profiting from them.">&#9432;</span>
+        {% endif %}
+      </div>
     </div>
     <div class="card card-shadow p-4 text-center">
       <div class="display text-2xl font-extrabold">{{ report.patterns | length }}</div>
@@ -259,7 +272,7 @@ via <details> instead of being the first thing on the page. -->
       labels: competitorData.labels,
       datasets: [
         { label: 'Ads Analyzed', data: competitorData.ads, backgroundColor: '#d8b8a8', borderRadius: 6 },
-        { label: 'Proven Winners', data: competitorData.winners, backgroundColor: FUCHSIA, borderRadius: 6 },
+        { label: '{{ "Included in Analysis" if winners_are_proxy_only else "Proven Winners" }}', data: competitorData.winners, backgroundColor: FUCHSIA, borderRadius: 6 },
       ],
     },
     options: {
