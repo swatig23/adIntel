@@ -79,7 +79,14 @@ async def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"using_stub": settings.use_meta_stub},
+        context={
+            # This banner used to always check settings.use_meta_stub, a
+            # flag that only matters when data_source=="meta_stub" -- so
+            # BigQuery/Kaggle-backed runs incorrectly showed "DEMO MODE"
+            # forever. Gate it on the actual active data_source instead.
+            "using_stub": settings.data_source == "meta_stub" and settings.use_meta_stub,
+            "data_source": settings.data_source,
+        },
     )
 
 

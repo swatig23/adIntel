@@ -5,29 +5,22 @@
   <title>AdIntel Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --paper: #faf7f0;
-      --paper-line: #e4ddc9;
-      --ink: #1c1a17;
-      --ink-soft: #57534a;
-      --accent: #7a2e2e;
-      --accent-soft: #f1e4e0;
-    }
-    body { font-family: 'Source Sans 3', system-ui, sans-serif; background: var(--paper); color: var(--ink); }
-    .font-serif { font-family: 'Playfair Display', Georgia, serif; }
-    .rule { border-top: 1px solid var(--paper-line); }
-    .rule-thick { border-top: 3px solid var(--ink); }
+    :root { --bg:#f5f3ff; --ink:#1e1b2e; --ink-soft:#6b6580; --violet:#7c3aed; --fuchsia:#d946ef; --amber:#f59e0b; }
+    body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--ink); }
+    .display { font-family:'Sora',system-ui,sans-serif; }
+    .card { background:#fff; border-radius:1.25rem; }
+    .card-shadow { box-shadow: 0 4px 24px rgba(124,58,237,0.08); }
   </style>
 </head>
 <body class="min-h-screen">
-<div class="max-w-3xl mx-auto px-6 py-14">
-  <div class="flex items-center justify-between mb-10">
-    <h1 class="font-serif text-3xl font-bold">AdIntel Report</h1>
-    <div class="flex gap-5 text-sm uppercase tracking-wider">
-      <a href="/history" class="text-[var(--ink-soft)] hover:text-[var(--accent)]">History</a>
-      <a href="/" class="text-[var(--ink-soft)] hover:text-[var(--accent)]">New Analysis</a>
+<div class="max-w-5xl mx-auto px-6 md:px-10 py-10">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="display text-2xl font-extrabold">AdIntel Report</h1>
+    <div class="flex gap-5 text-sm font-semibold">
+      <a href="/history" class="text-[var(--ink-soft)] hover:text-[var(--violet)]">History</a>
+      <a href="/" class="text-[var(--ink-soft)] hover:text-[var(--violet)]">New Analysis</a>
     </div>
   </div>
   {% include "report.html" %}
