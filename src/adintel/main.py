@@ -350,7 +350,7 @@ async def generate_creative_image(
         except Exception as pil_err:  # noqa: BLE001
             logger.warning(f"[generate-creative] PIL fallback also failed: {pil_err}")
             return JSONResponse(
-                {"status": "error", "message": f"Image generation failed: {e}"},
+                {"status": "error", "message": "Image generation failed. Check Vertex AI access, billing, or model availability."},
                 status_code=500,
             )
 
