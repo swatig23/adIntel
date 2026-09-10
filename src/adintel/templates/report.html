@@ -1,23 +1,28 @@
 <!-- HTMX partial: dashboard-style report.
 Product design: a marketer scans this in 5 seconds -- headline insight,
-three charts, done. Full narrative/per-item detail is one click away
-via <details> instead of being the first thing on the page. -->
+a couple of charts, done. Full narrative/per-item detail stays completely
+available, just tucked behind <details> disclosures instead of being the
+first thing on the page. Sequence mirrors the product story:
+INSIGHT -> EVIDENCE -> ACTION -> CREATIVE. -->
 {% macro evidence_section(gap) -%}
 {% set cards = gap_evidence.get(gap.pattern.description, []) %}
 <details class="mt-3 group">
   <summary class="text-xs font-semibold text-[var(--violet)] cursor-pointer select-none list-none flex items-center gap-1.5">
     <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-    Why this recommendation?
+    Why this matters
   </summary>
-  <div class="mt-3 pt-3 border-t border-black/10">
+  <div class="mt-3 pt-3 border-t border-black/10 space-y-3">
+    {% if gap.recommendation | length > 90 %}
+    <p class="text-sm text-[var(--ink)]">{{ gap.recommendation }}</p>
+    {% endif %}
     <p class="text-xs text-[var(--ink-soft)] leading-relaxed">
-      <strong>Pattern evidence:</strong> {{ "%.0f"|format(gap.pattern.frequency_pct) }}% of analyzed winner ads showed this pattern.
+      <strong>Pattern evidence:</strong> {{ "%.0f"|format(gap.pattern.frequency_pct) }}% of analyzed reference ads showed this pattern.
       {% if gap.evidence_summary %} {{ gap.evidence_summary }}{% endif %}
     </p>
     {% if cards %}
-    <div class="grid grid-cols-1 md:grid-cols-{{ [cards|length, 3]|min }} gap-3 mt-3">
+    <div class="grid grid-cols-1 md:grid-cols-{{ [cards|length, 3]|min }} gap-3">
       {% for ad in cards %}
-      <article class="rounded-lg border border-[var(--bg)] bg-white overflow-hidden">
+      <article class="rounded-lg border border-[var(--line)] bg-white overflow-hidden">
         {% if ad.image_url %}
         <img src="{{ ad.image_url }}" alt="{{ ad.brand }} supporting ad" class="w-full h-28 object-cover" loading="lazy" />
         {% endif %}
@@ -36,17 +41,51 @@ via <details> instead of being the first thing on the page. -->
       {% endfor %}
     </div>
     {% else %}
-    <p class="text-xs text-[var(--ink-soft)] mt-2">Source ad previews were unavailable for this saved analysis.</p>
+    <p class="text-xs text-[var(--ink-soft)]">Source ad previews were unavailable for this saved analysis.</p>
     {% endif %}
-    <p class="text-[10px] text-[var(--ink-soft)] mt-3">Long-running status is a proxy for effectiveness, not confirmed ad performance.</p>
+    {% if gap.action_variants %}
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-wide text-[var(--ink-soft)] mb-2">Alternate directions</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        {% for variant in gap.action_variants %}
+        <div class="rounded-lg bg-white/70 p-3 text-xs text-[var(--ink-soft)]"><span class="font-bold text-[var(--violet)]">Variant {{ loop.index }}</span><p class="mt-1">{{ variant }}</p></div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    <p class="text-[10px] text-[var(--ink-soft)]">Long-running status is a proxy for effectiveness, not confirmed ad performance.</p>
   </div>
 </details>
 {%- endmacro %}
+
+{% macro priority_card(g) -%}
+<div class="flex items-start gap-4 rounded-xl p-4 {% if g.user_has %}bg-[var(--sage-bg)]{% else %}bg-[var(--amber-bg)]{% endif %}">
+  <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white text-sm {% if g.user_has %}bg-[var(--sage)]{% else %}bg-[var(--amber)]{% endif %}">
+    P{{ g.priority }}
+  </div>
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center gap-2 mb-1 flex-wrap">
+      <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-white/70 text-[var(--ink)]">{{ g.pattern.category.replace("_", " ") }}</span>
+      {% if g.user_has %}
+        <span class="text-xs font-bold text-[var(--sage-text)]">Already Doing</span>
+      {% else %}
+        <span class="text-xs font-bold text-[var(--amber-text)]">Gap Detected</span>
+      {% endif %}
+    </div>
+    <p class="text-[var(--ink)] font-medium text-sm leading-snug">{{ g.recommendation | sentence_preview(120) }}</p>
+    <div class="mt-2.5 flex items-center gap-2 text-xs">
+      <span class="rounded-full bg-white/70 px-2 py-1 font-bold text-[var(--violet)]">Opportunity {{ "%.0f"|format(g.opportunity_score) }}/100</span>
+    </div>
+    {{ evidence_section(g) }}
+  </div>
+</div>
+{%- endmacro %}
+
 <div class="space-y-6">
 
-  <!-- Pipeline strip: makes the agent flow legible at a glance. Purely
-       presentational -- no new data, just labels for existing counts
-       already rendered below in the stats strip / sections. -->
+  <!-- Pipeline strip: makes the agent flow legible at a glance, and makes
+       it visually obvious that everything downstream traces back to
+       competitor ad data. Purely presentational -- no new data. -->
   <section class="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-[var(--ink-soft)] uppercase tracking-wide">
     <span class="px-3 py-1.5 rounded-full bg-[#f1e4e0]">Competitor ads</span>
     <span class="text-[var(--violet)]">&rarr;</span>
@@ -58,9 +97,9 @@ via <details> instead of being the first thing on the page. -->
   </section>
 
   {% if data_quality.zero_ad_brands %}
-  <section class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex items-start gap-3">
-    <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-    <p class="text-sm text-amber-800">
+  <section class="rounded-xl border border-[var(--amber)]/40 bg-[var(--amber-bg)] px-4 py-3 flex items-start gap-3">
+    <svg class="w-5 h-5 text-[var(--amber-text)] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+    <p class="text-sm text-[var(--amber-text)]">
       {% if data_quality.is_empty %}
       <strong>No ads found</strong> for any of these brands in our data source. Try a different brand -- our dataset covers well-known consumer brands (e.g. BMW, Audi, AutoZone).
       {% else %}
@@ -70,25 +109,48 @@ via <details> instead of being the first thing on the page. -->
   </section>
   {% endif %}
 
-  <!-- Headline -->
-  <section class="bg-gradient-to-br from-[var(--violet)] to-[var(--fuchsia)] rounded-2xl p-6 text-white shadow-xl shadow-black/10">
+  <!-- 1. WHAT MATTERS MOST -->
+  <section class="rounded-2xl p-6 text-white shadow-xl shadow-black/10" style="background: var(--violet);">
     {% if strategy_name %}
     <div class="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-bold uppercase tracking-wider mb-3">
       {{ strategy_name }}
     </div>
     {% endif %}
     <p class="text-xs uppercase tracking-widest opacity-80 mb-2 font-bold">Biggest Opportunity</p>
-    <p class="display text-2xl font-bold leading-snug">{{ headline }}</p>
+    <p class="display text-2xl font-bold leading-snug mb-3">{{ headline }}</p>
+    {% if whats_working %}
+    <p class="text-sm leading-relaxed opacity-90 max-w-2xl">{{ whats_working | sentence_preview(200) }}</p>
+    {% endif %}
+
+    {% if opportunity_evidence %}
+    <ul class="mt-4 space-y-1.5">
+      {% for p in opportunity_evidence %}
+      <li class="text-sm flex items-baseline gap-2">
+        <span class="text-[10px] font-bold uppercase tracking-wide bg-white/20 px-1.5 py-0.5 rounded flex-shrink-0">{{ p.category.replace("_", " ") }}</span>
+        <span class="opacity-95">{{ p.description | sentence_preview(90) }} <span class="opacity-70">&middot; {{ "%.0f"|format(p.frequency_pct) }}% of reference ads</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
     <details class="mt-4 group">
       <summary class="text-xs uppercase tracking-wider font-semibold cursor-pointer opacity-90 hover:opacity-100 select-none list-none flex items-center gap-1.5">
         <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         Read full analysis
       </summary>
-      <div class="mt-3 pt-3 border-t border-white/25 text-sm leading-relaxed whitespace-pre-wrap opacity-95">{{ report.executive_summary | report_md | safe }}</div>
+      <div class="mt-3 pt-3 border-t border-white/25 text-sm leading-relaxed opacity-95 space-y-3">
+        {% if whats_working or top_moves or what_not_to_do %}
+        {% if whats_working %}<p><strong class="font-bold">What's working for competitors:</strong> {{ whats_working }}</p>{% endif %}
+        {% if top_moves %}<div><strong class="font-bold">Your top moves this week:</strong><div class="mt-1">{{ top_moves | report_md | safe }}</div></div>{% endif %}
+        {% if what_not_to_do %}<p><strong class="font-bold">What not to do:</strong> {{ what_not_to_do }}</p>{% endif %}
+        {% else %}
+        <div class="whitespace-pre-wrap">{{ report.executive_summary | report_md | safe }}</div>
+        {% endif %}
+      </div>
     </details>
   </section>
 
-  <!-- Stats strip -->
+  <!-- Metrics strip: four distinct, non-duplicative counts. -->
   <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
     <div class="card card-shadow p-4 text-center">
       <div class="display text-2xl font-extrabold">{{ report.competitors | length }}</div>
@@ -98,16 +160,11 @@ via <details> instead of being the first thing on the page. -->
       <div class="display text-2xl font-extrabold">{{ competitor_chart.ads | sum }}</div>
       <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium">Ads Analyzed</div>
     </div>
-    <div class="rounded-2xl p-4 text-center shadow-md shadow-amber-200" style="background: var(--amber);">
-      <div class="display text-2xl font-extrabold text-white">{{ report.winner_count }}</div>
-      <div class="text-xs text-white/90 mt-1 font-medium flex items-center justify-center gap-1">
-        {% if winners_are_proxy_only %}
-        Ads Analyzed
-        <span class="cursor-help" title="This data source has no delivery-date history, so every ad is counted here -- winner status couldn't be measured for this run.">&#9432;</span>
-        {% else %}
-        Proven Winners
-        <span class="cursor-help" title="Ads that have run 90+ days without stopping -- a strong signal the advertiser is still profiting from them.">&#9432;</span>
-        {% endif %}
+    <div class="card card-shadow p-4 text-center">
+      <div class="display text-2xl font-extrabold">{{ report.winner_count }}</div>
+      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium flex items-center justify-center gap-1">
+        Reference Ads
+        <span class="cursor-help" title="{% if winners_are_proxy_only %}This data source has no delivery-date history, so every retrieved ad is used as reference material -- this is not a performance measurement.{% else %}Ads that have run 90+ days without stopping, used as reference material for pattern extraction -- not a performance measurement.{% endif %}">&#9432;</span>
       </div>
     </div>
     <div class="card card-shadow p-4 text-center">
@@ -116,104 +173,103 @@ via <details> instead of being the first thing on the page. -->
     </div>
   </section>
 
-  <!-- Charts row -->
-  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-    <!-- Winning patterns -->
-    <div class="card card-shadow p-5 lg:col-span-2">
-      <h2 class="display font-bold text-base mb-1">Winning Patterns</h2>
-      <p class="text-xs text-[var(--ink-soft)] mb-3">Extracted from proven-winner ads pulled straight from competitor data.</p>
-      <div class="h-56">
-        <canvas id="patternChart"></canvas>
+  <!-- 2. WHAT ARE COMPETITORS DOING -->
+  <section class="card card-shadow p-5">
+    <h2 class="display font-bold text-base mb-1">Winning Patterns</h2>
+    <p class="text-xs text-[var(--ink-soft)] mb-4">Extracted directly from competitor reference ads pulled from the dataset above.</p>
+    <div class="h-56 mb-5">
+      <canvas id="patternChart"></canvas>
+    </div>
+    {% if report.patterns %}
+    <div class="space-y-2 border-t border-[var(--line)] pt-4">
+      {% for p in report.patterns[:4] %}
+      <div class="flex items-start gap-3 text-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#f1e4e0] text-[var(--ink)] flex-shrink-0 mt-0.5">{{ p.category.replace("_", " ") }}</span>
+        <span class="text-[var(--ink-soft)] flex-1">{{ p.description | sentence_preview(90) }}</span>
+        <span class="text-xs font-semibold text-[var(--ink-soft)] whitespace-nowrap">{{ "%.0f"|format(p.frequency_pct) }}%</span>
       </div>
+      {% endfor %}
+    </div>
+    {% if report.patterns | length > 4 %}
+    <details class="mt-3 group">
+      <summary class="text-xs uppercase tracking-wider font-semibold cursor-pointer text-[var(--violet)] select-none list-none flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        Show all {{ report.patterns | length }} patterns
+      </summary>
+      <div class="mt-3 space-y-3">
+        {% for p in report.patterns %}
+        <div class="flex items-start gap-4 bg-[#f1e4e0] rounded-xl p-4">
+          <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--violet)] text-white font-bold uppercase whitespace-nowrap flex-shrink-0 mt-0.5">{{ p.category.replace("_", " ") }}</span>
+          <div class="flex-1">
+            <p class="text-[var(--ink)]">{{ p.description }}</p>
+            <p class="text-xs text-[var(--ink-soft)] mt-1 font-medium">{{ "%.0f"|format(p.frequency_pct) }}% of reference ads</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+    {% endif %}
+  </section>
+
+  <!-- 3. WHERE DO WE STAND -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="card card-shadow p-5 lg:col-span-2">
+      <h2 class="display font-bold text-base mb-1">Competitive Creative DNA</h2>
+      <p class="text-xs text-[var(--ink-soft)] mb-3">Observable creative signals, not performance predictions.</p>
+      {% if scorecard.has_comparison %}
+      <div class="flex gap-3 text-center mb-4">
+        <div class="rounded-lg bg-[#f1e4e0] px-3 py-2 flex-1"><p class="text-lg font-bold">{{ scorecard.user_score }}</p><p class="text-[10px] text-[var(--ink-soft)]">Your score</p></div>
+        <div class="rounded-lg bg-[#f1e4e0] px-3 py-2 flex-1"><p class="text-lg font-bold">{{ scorecard.competitor_score }}</p><p class="text-[10px] text-[var(--ink-soft)]">Competitor avg.</p></div>
+        <div class="rounded-lg px-3 py-2 flex-1 {% if scorecard.gap >= 0 %}bg-[var(--sage-bg)] text-[var(--sage-text)]{% else %}bg-[var(--amber-bg)] text-[var(--amber-text)]{% endif %}"><p class="text-lg font-bold">{{ "%+.0f"|format(scorecard.gap) }}</p><p class="text-[10px]">Creative gap</p></div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-left text-xs uppercase tracking-wide text-[var(--ink-soft)] border-b border-[var(--line)]"><tr><th class="pb-2 font-semibold">Dimension</th><th class="pb-2 text-right font-semibold">Yours</th><th class="pb-2 text-right font-semibold">Competitor avg.</th><th class="pb-2 text-right font-semibold">Gap</th></tr></thead>
+          <tbody>
+            {% for row in scorecard.rows %}
+            <tr class="border-b border-[var(--line)] last:border-0"><td class="py-2 font-medium">{{ row.dimension }}</td><td class="py-2 text-right">{{ row.user }}/10</td><td class="py-2 text-right">{{ row.competitor }}/10</td><td class="py-2 text-right font-semibold {% if row.gap > 0 %}text-[var(--sage-text)]{% elif row.gap < 0 %}text-[var(--amber-text)]{% else %}text-[var(--ink)]{% endif %}">{{ "%+.1f"|format(row.gap) }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="text-[10px] text-[var(--ink-soft)] mt-3">Scores reflect Creative DNA signals extracted from available copy and creative metadata; they are not CTR, conversion, or ROAS predictions.</p>
+      {% if scorecard.dominant_signals %}
+      <p class="text-xs text-[var(--ink-soft)] mt-3 pt-3 border-t border-[var(--line)]">
+        <strong class="text-[var(--violet)]">Dominant competitor play:</strong> {{ report.competitors | length }}/{{ report.competitors | length }} competitors use {{ scorecard.dominant_signals | join(", ") }}.
+      </p>
+      {% endif %}
+      {% else %}
+      <p class="text-sm text-[var(--ink-soft)]">Not enough data to compare -- add your own ads or a wider competitor set.</p>
+      {% endif %}
     </div>
 
-    <!-- Gap coverage donut -->
     <div class="card card-shadow p-5">
       <h2 class="display font-bold text-base mb-1">Your Coverage</h2>
-      <p class="text-xs text-[var(--ink-soft)] mb-3">Winning patterns you already use vs. gaps to close.</p>
-      <div class="h-56">
+      <p class="text-xs text-[var(--ink-soft)] mb-3">Patterns you already use vs. gaps to close.</p>
+      <div class="h-40">
         <canvas id="gapChart"></canvas>
       </div>
     </div>
   </section>
 
-  {% if scorecard.has_comparison %}
-  <!-- Creative DNA: these scores reflect observable creative features, not ad performance. -->
-  <section class="card card-shadow p-6">
-    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
-      <div>
-        <h2 class="display font-bold text-xl mb-1">Competitive Creative DNA</h2>
-        <p class="text-sm text-[var(--ink-soft)]">A transparent comparison of observable creative signals in your ads and competitor ads.</p>
-      </div>
-      <div class="flex gap-3 text-center">
-        <div class="rounded-lg bg-[#f1e4e0] px-3 py-2"><p class="text-lg font-bold">{{ scorecard.user_score }}</p><p class="text-[10px] text-[var(--ink-soft)]">Your score</p></div>
-        <div class="rounded-lg bg-[#f1e4e0] px-3 py-2"><p class="text-lg font-bold">{{ scorecard.competitor_score }}</p><p class="text-[10px] text-[var(--ink-soft)]">Competitor avg.</p></div>
-        <div class="rounded-lg px-3 py-2 {% if scorecard.gap >= 0 %}bg-emerald-50 text-emerald-800{% else %}bg-amber-50 text-amber-800{% endif %}"><p class="text-lg font-bold">{{ "%+.0f"|format(scorecard.gap) }}</p><p class="text-[10px]">Creative gap</p></div>
-      </div>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="text-left text-xs uppercase tracking-wide text-[var(--ink-soft)] border-b border-[var(--bg)]"><tr><th class="pb-2 font-semibold">Dimension</th><th class="pb-2 text-right font-semibold">Yours</th><th class="pb-2 text-right font-semibold">Competitor avg.</th><th class="pb-2 text-right font-semibold">Gap</th></tr></thead>
-        <tbody>
-          {% for row in scorecard.rows %}
-          <tr class="border-b border-[var(--bg)] last:border-0"><td class="py-2.5 font-medium">{{ row.dimension }}</td><td class="py-2.5 text-right">{{ row.user }}/10</td><td class="py-2.5 text-right">{{ row.competitor }}/10</td><td class="py-2.5 text-right font-semibold {% if row.gap >= 0 %}text-emerald-700{% else %}text-amber-700{% endif %}">{{ "%+.1f"|format(row.gap) }}</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <p class="text-[10px] text-[var(--ink-soft)] mt-4">Scores reflect Creative DNA signals extracted from available copy and creative metadata; they are not CTR, conversion, or ROAS predictions.</p>
-  </section>
-  {% endif %}
-
-  {% if scorecard.dominant_signals %}
-  <section class="rounded-xl border border-[var(--violet)]/20 bg-[#f1e4e0] p-5">
-    <p class="text-xs uppercase tracking-widest font-bold text-[var(--violet)] mb-1">Dominant competitor play</p>
-    <p class="display font-bold text-lg">{{ report.competitors | length }}/{{ report.competitors | length }} competitors use {{ scorecard.dominant_signals | join(", ") }}.</p>
-    <p class="text-sm text-[var(--ink-soft)] mt-1">This is a Creative DNA signal from the ads in this report—not a proven performance claim.</p>
-  </section>
-  {% endif %}
-
   <!-- Competitor comparison -->
   <section class="card card-shadow p-5">
     <h2 class="display font-bold text-base mb-1">Competitor Comparison</h2>
-    <p class="text-xs text-[var(--ink-soft)] mb-3">Ads analyzed vs. proven winners, per competitor.</p>
-    <div class="h-64">
+    <p class="text-xs text-[var(--ink-soft)] mb-3">Ads analyzed by competitor.</p>
+    <div class="h-56">
       <canvas id="competitorChart"></canvas>
     </div>
   </section>
 
-  <!-- Priority Gaps: top 3 visible, rest behind disclosure -->
+  <!-- 4. WHAT SHOULD WE DO -->
   {% if report.gaps %}
   <section class="card card-shadow p-6">
     <h2 class="display font-bold text-xl mb-1">Your Priority Moves</h2>
     <p class="text-sm text-[var(--ink-soft)] mb-5">Top actions, ranked by impact.</p>
     <div class="space-y-3">
       {% for g in report.gaps[:3] %}
-      <div class="flex items-start gap-4 rounded-xl p-4 {% if g.user_has %}bg-emerald-50{% else %}bg-amber-50{% endif %}">
-        <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white text-sm {% if g.user_has %}bg-emerald-500{% else %}bg-amber-500{% endif %}">
-          P{{ g.priority }}
-        </div>
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            {% if g.user_has %}
-              <span class="text-xs font-bold text-emerald-700">Already Doing</span>
-            {% else %}
-              <span class="text-xs font-bold text-amber-700">Gap Detected</span>
-            {% endif %}
-            <span class="text-xs text-[var(--ink-soft)]">&middot; {{ g.pattern.category }}</span>
-          </div>
-          <p class="text-[var(--ink)] font-medium">{{ g.recommendation }}</p>
-          <div class="mt-3 flex items-center gap-2 text-xs"><span class="rounded-full bg-white/70 px-2 py-1 font-bold text-[var(--violet)]">Opportunity {{ "%.0f"|format(g.opportunity_score) }}/100</span><span class="text-[var(--ink-soft)]">Evidence-backed priority</span></div>
-          {{ evidence_section(g) }}
-          {% if g.action_variants %}
-          <details class="mt-3 group">
-            <summary class="text-xs font-semibold text-[var(--violet)] cursor-pointer select-none list-none flex items-center gap-1.5"><svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg> Open action studio</summary>
-            <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">{% for variant in g.action_variants %}<div class="rounded-lg bg-white/70 p-3 text-xs text-[var(--ink-soft)]"><span class="font-bold text-[var(--violet)]">Variant {{ loop.index }}</span><p class="mt-1">{{ variant }}</p></div>{% endfor %}</div>
-          </details>
-          {% endif %}
-        </div>
-      </div>
+      {{ priority_card(g) }}
       {% endfor %}
     </div>
     {% if report.gaps | length > 3 %}
@@ -224,24 +280,7 @@ via <details> instead of being the first thing on the page. -->
       </summary>
       <div class="mt-3 space-y-3">
         {% for g in report.gaps[3:8] %}
-        <div class="flex items-start gap-4 rounded-xl p-4 {% if g.user_has %}bg-emerald-50{% else %}bg-amber-50{% endif %}">
-          <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white text-sm {% if g.user_has %}bg-emerald-500{% else %}bg-amber-500{% endif %}">
-            P{{ g.priority }}
-          </div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              {% if g.user_has %}
-                <span class="text-xs font-bold text-emerald-700">Already Doing</span>
-              {% else %}
-                <span class="text-xs font-bold text-amber-700">Gap Detected</span>
-              {% endif %}
-              <span class="text-xs text-[var(--ink-soft)]">&middot; {{ g.pattern.category }}</span>
-            </div>
-            <p class="text-[var(--ink)] font-medium">{{ g.recommendation }}</p>
-            <div class="mt-3 flex items-center gap-2 text-xs"><span class="rounded-full bg-white/70 px-2 py-1 font-bold text-[var(--violet)]">Opportunity {{ "%.0f"|format(g.opportunity_score) }}/100</span></div>
-            {{ evidence_section(g) }}
-          </div>
-        </div>
+        {{ priority_card(g) }}
         {% endfor %}
       </div>
     </details>
@@ -249,25 +288,57 @@ via <details> instead of being the first thing on the page. -->
   </section>
   {% endif %}
 
-  <!-- Generated Creatives -->
+  <!-- 5. WHAT COULD WE CREATE -->
   {% if report.generated_creatives %}
   <section class="card card-shadow p-6">
     <h2 class="display font-bold text-xl mb-1">Fresh Ad Creatives</h2>
     <p class="text-sm text-[var(--ink-soft)] mb-5">AI-generated concepts informed by winning competitor patterns.</p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       {% for c in report.generated_creatives %}
-      <div class="rounded-xl overflow-hidden bg-[#f1e4e0]">
+      <div class="rounded-xl overflow-hidden bg-[#f1e4e0] border border-[var(--line)] flex flex-col">
         <img src="/creatives/{{ c.filename }}" alt="Generated creative" class="w-full aspect-square object-cover" />
-        <div class="p-4 space-y-2">
-          <p class="display font-bold text-[var(--ink)]">{{ c.hook }}</p>
-          <p class="text-sm text-[var(--ink-soft)]">{{ c.body_copy }}</p>
+        <div class="p-4 space-y-2 flex-1 flex flex-col">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--violet)]">Creative {{ "%02d"|format(loop.index) }}</p>
+          <p class="display font-bold text-[var(--ink)] leading-snug">{{ c.hook }}</p>
+          <p class="text-sm text-[var(--ink-soft)]">{{ c.body_copy | truncate_words(55) }}</p>
           <div class="pt-2 flex items-center justify-between">
             <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--violet)] text-white font-bold">{{ c.cta }}</span>
             <a href="/creatives/{{ c.filename }}" download class="text-xs text-[var(--ink-soft)] hover:text-[var(--violet)] underline">Download</a>
           </div>
-          {% if c.rationale %}
-          <p class="text-xs text-[var(--ink-soft)] pt-2 border-t border-white italic">{{ c.rationale }}</p>
-          {% endif %}
+
+          <details class="group pt-2 mt-auto">
+            <summary class="text-xs font-semibold text-[var(--violet)] cursor-pointer select-none list-none flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              View full concept
+            </summary>
+            <div class="mt-2 pt-2 border-t border-white space-y-2">
+              <p class="text-sm text-[var(--ink-soft)]">{{ c.body_copy }}</p>
+              {% if c.rationale %}
+              <p class="text-xs text-[var(--ink-soft)] italic">{{ c.rationale }}</p>
+              {% endif %}
+            </div>
+          </details>
+
+          <!-- Optional, one-at-a-time AI visual generation -- UI/state only.
+               No new backend route exists yet; this intentionally does not
+               call the network. Wiring to real Vertex AI image generation
+               is a separate, explicit follow-up task. -->
+          <div class="pt-1">
+            <button type="button"
+              class="ai-visual-trigger w-full text-xs font-semibold text-[var(--violet)] border border-[var(--violet)]/30 rounded-lg py-2 hover:bg-[var(--violet)] hover:text-white transition-colors"
+              data-creative="{{ loop.index }}">
+              Generate AI Visual &rarr;
+            </button>
+            <div class="ai-visual-confirm hidden mt-2 p-3 rounded-lg bg-white border border-[var(--line)] text-xs text-[var(--ink-soft)] space-y-2">
+              <p class="font-bold text-[var(--ink)] uppercase tracking-wide text-[10px]">Generate AI Visual</p>
+              <p>This uses Gemini image generation through Google Cloud Vertex AI and may incur additional Google Cloud charges.</p>
+              <div class="flex gap-2 pt-1">
+                <button type="button" class="ai-visual-confirm-btn flex-1 bg-[var(--violet)] text-white rounded-md py-1.5 font-semibold">Generate Image</button>
+                <button type="button" class="ai-visual-cancel-btn flex-1 border border-[var(--line)] rounded-md py-1.5 font-semibold text-[var(--ink-soft)]">Cancel</button>
+              </div>
+              <p class="ai-visual-note hidden text-[var(--ink-soft)]">Optional AI visual generation isn't enabled in this build yet -- the concept graphic above remains your creative.</p>
+            </div>
+          </div>
         </div>
       </div>
       {% endfor %}
@@ -275,31 +346,7 @@ via <details> instead of being the first thing on the page. -->
   </section>
   {% endif %}
 
-  <!-- Full pattern list, behind disclosure since the chart above already
-       shows the shape of the data -->
-  {% if report.patterns %}
-  <section class="card card-shadow p-6">
-    <details class="group">
-      <summary class="display font-bold text-xl cursor-pointer select-none list-none flex items-center gap-2">
-        <svg class="w-5 h-5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        All Winning Patterns ({{ report.patterns | length }})
-      </summary>
-      <div class="mt-4 space-y-3">
-        {% for p in report.patterns %}
-        <div class="flex items-start gap-4 bg-[#f1e4e0] rounded-xl p-4">
-          <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--violet)] text-white font-bold uppercase whitespace-nowrap flex-shrink-0 mt-0.5">{{ p.category }}</span>
-          <div class="flex-1">
-            <p class="text-[var(--ink)]">{{ p.description }}</p>
-            <p class="text-xs text-[var(--ink-soft)] mt-1 font-medium">{{ "%.0f"|format(p.frequency_pct) }}% of winners</p>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </details>
-  </section>
-  {% endif %}
-
-  <!-- Competitor breakdown table -->
+  <!-- 6. WHO WAS ANALYZED -->
   <section class="card card-shadow p-6">
     <h2 class="display font-bold text-xl mb-5">Competitor Breakdown</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -309,7 +356,7 @@ via <details> instead of being the first thing on the page. -->
           <h3 class="display font-bold">{{ c.name }}</h3>
           <span class="text-xs px-2 py-0.5 rounded-full bg-white text-[var(--ink-soft)] font-medium">{{ c.ads | length }} ads</span>
         </div>
-        <p class="text-sm text-[var(--violet)] font-bold">{{ report.winners_for(c) | length }} proven winners</p>
+        <p class="text-sm text-[var(--violet)] font-bold">{{ report.winners_for(c) | length }} reference ads</p>
       </div>
       {% endfor %}
     </div>
@@ -324,16 +371,16 @@ via <details> instead of being the first thing on the page. -->
   const competitorData = {{ competitor_chart | tojson }};
 
   const VIOLET = '#7a2e2e';
-  const FUCHSIA = '#b5533c';
-  const AMBER = '#b8860b';
-  const EMERALD = '#2f7a4f';
+  const TERRACOTTA = '#a8763a';
+  const SAGE = '#5b7d64';
+  const AMBER = '#a8763a';
 
   new Chart(document.getElementById('patternChart'), {
     type: 'bar',
     data: {
       labels: patternData.labels,
       datasets: [{
-        label: '% of winning ads',
+        label: '% of reference ads',
         data: patternData.data,
         backgroundColor: VIOLET,
         borderRadius: 6,
@@ -354,7 +401,7 @@ via <details> instead of being the first thing on the page. -->
       labels: gapData.labels,
       datasets: [{
         data: gapData.data,
-        backgroundColor: [EMERALD, AMBER],
+        backgroundColor: [SAGE, AMBER],
         borderWidth: 0,
       }],
     },
@@ -371,7 +418,7 @@ via <details> instead of being the first thing on the page. -->
       labels: competitorData.labels,
       datasets: [
         { label: 'Ads Analyzed', data: competitorData.ads, backgroundColor: '#d8b8a8', borderRadius: 6 },
-        { label: '{{ "Included in Analysis" if winners_are_proxy_only else "Proven Winners" }}', data: competitorData.winners, backgroundColor: FUCHSIA, borderRadius: 6 },
+        { label: '{{ "Included in Analysis" if winners_are_proxy_only else "Reference Ads" }}', data: competitorData.winners, backgroundColor: TERRACOTTA, borderRadius: 6 },
       ],
     },
     options: {
@@ -380,6 +427,30 @@ via <details> instead of being the first thing on the page. -->
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
       scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
     },
+  });
+
+  // Optional AI visual generation -- pure UI state, no network calls.
+  document.querySelectorAll('.ai-visual-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const panel = btn.nextElementSibling;
+      if (panel) panel.classList.remove('hidden');
+      btn.classList.add('hidden');
+    });
+  });
+  document.querySelectorAll('.ai-visual-cancel-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const panel = btn.closest('.ai-visual-confirm');
+      const trigger = panel.previousElementSibling;
+      panel.classList.add('hidden');
+      panel.querySelector('.ai-visual-note').classList.add('hidden');
+      if (trigger) trigger.classList.remove('hidden');
+    });
+  });
+  document.querySelectorAll('.ai-visual-confirm-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      btn.closest('.flex').style.display = 'none';
+      btn.closest('.ai-visual-confirm').querySelector('.ai-visual-note').classList.remove('hidden');
+    });
   });
 })();
 </script>

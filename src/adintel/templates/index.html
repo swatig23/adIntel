@@ -17,7 +17,13 @@
       --line: #e4ddc9;
       --violet: #7a2e2e;
       --violet-dark: #5f2323;
-      --amber: #b8860b;
+      --fuchsia: #a8763a;
+      --amber: #a8763a;
+      --amber-bg: #f6ecd9;
+      --amber-text: #7a5a1e;
+      --sage: #5b7d64;
+      --sage-bg: #e9f0e7;
+      --sage-text: #3f5e47;
     }
     body {
       font-family: 'Source Sans 3', system-ui, sans-serif;
@@ -136,7 +142,7 @@
       AdIntel tells you what worked.
     </h1>
     <p class="text-lg md:text-xl text-[var(--ink-soft)] leading-relaxed mb-10 max-w-2xl">
-      Analyze proven competitor ads, uncover repeatable creative patterns, identify
+      Analyze real competitor ads, uncover repeatable creative patterns, identify
       strategic gaps, and turn those insights into fresh ad concepts.
     </p>
     <a href="#analysis-form" class="submit-btn inline-flex items-center gap-2 px-6 py-3.5 rounded-lg font-bold">
@@ -163,7 +169,7 @@
           <span class="step-num text-2xl font-extrabold">02</span>
           <h3 class="display font-bold text-xl">Decode</h3>
         </div>
-        <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Gemini extracts the creative patterns behind proven ads.</p>
+        <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Gemini extracts the creative patterns behind real competitor ads.</p>
       </div>
       <div class="step-divider md:pl-10">
         <div class="flex items-baseline gap-3 mb-2">
@@ -177,24 +183,41 @@
 
   <!-- 4. METRICS STRIP -->
   <section class="py-10 border-t border-[var(--line)]">
+    {% if metrics %}
     <div class="grid grid-cols-2 md:grid-cols-4">
       <div class="metric-divider text-center md:text-left px-2">
-        <div class="display text-3xl font-extrabold">{{ metrics.ads if metrics else "--" }}</div>
-        <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Proven ads</div>
+        <div class="display text-3xl font-extrabold">{{ metrics.ads }}</div>
+        <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Reference ads</div>
       </div>
       <div class="metric-divider text-center md:text-left px-2">
-        <div class="display text-3xl font-extrabold">{{ metrics.patterns if metrics else "--" }}</div>
+        <div class="display text-3xl font-extrabold">{{ metrics.patterns }}</div>
         <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Winning patterns</div>
       </div>
       <div class="metric-divider text-center md:text-left px-2">
-        <div class="display text-3xl font-extrabold">{{ metrics.gaps if metrics else "--" }}</div>
+        <div class="display text-3xl font-extrabold">{{ metrics.gaps }}</div>
         <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Strategic gaps</div>
       </div>
       <div class="metric-divider text-center md:text-left px-2">
-        <div class="display text-3xl font-extrabold">{{ metrics.creatives if metrics else "--" }}</div>
+        <div class="display text-3xl font-extrabold">{{ metrics.creatives }}</div>
         <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Fresh creatives</div>
       </div>
     </div>
+    {% else %}
+    <!-- Intentional first-use empty state -- never fabricate placeholder
+         numbers, and never show a bare grid of "--" that reads as broken. -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-[var(--line)] bg-white px-6 py-5">
+      <div>
+        <p class="eyebrow text-[var(--violet)] mb-1.5">Your first analysis</p>
+        <p class="text-sm text-[var(--ink-soft)] max-w-md">No analysis yet. Run your first competitor analysis to unlock patterns, strategic gaps, and creative concepts.</p>
+      </div>
+      <a href="#analysis-form" class="submit-btn inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm whitespace-nowrap">
+        Start an Analysis
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+    </div>
+    {% endif %}
   </section>
 
   <!-- 5. ANALYSIS FORM -->
@@ -327,7 +350,7 @@
               </div>
               <div class="flex items-center gap-2 stage" data-stage="2">
                 <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-                <span class="stage-label text-[var(--ink-soft)]">Flagging proven winners</span>
+                <span class="stage-label text-[var(--ink-soft)]">Flagging reference ads</span>
               </div>
               <div class="flex items-center gap-2 stage" data-stage="3">
                 <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>

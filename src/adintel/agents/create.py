@@ -134,11 +134,14 @@ class CreateAgent:
         from PIL import Image, ImageDraw, ImageFont
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        img = Image.new("RGB", (600, 600), color=(15, 23, 42))  # Dark slate background
+        img = Image.new("RGB", (600, 600), color=(28, 26, 23))  # Deep charcoal background, on-brand with AdIntel's editorial palette
         draw = ImageDraw.Draw(img)
 
-        colors = [(79, 70, 229), (236, 72, 153), (16, 185, 129)]
-        bar_color = colors[idx % len(colors)]
+        # Warm, restrained accent bar -- all three cards share the same
+        # burgundy family instead of unrelated bright blue/pink/green, so
+        # they read as one product instead of three random templates.
+        accents = [(122, 46, 46), (168, 118, 58), (95, 35, 35)]
+        bar_color = accents[idx % len(accents)]
         draw.rectangle([0, 0, 600, 90], fill=bar_color)
 
         # Try a real TTF for legible text; fall back to PIL's bitmap font

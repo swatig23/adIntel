@@ -60,6 +60,30 @@ def extract_strategy_name(executive_summary: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+def extract_summary_section(executive_summary: str, heading: str) -> str:
+    """Generic extractor for any '**Heading**\\n...' block in ReportAgent's
+    markdown output (see agents/report.py's PROMPT for the five sections it
+    always writes: Strategy Name, Headline, What's working for competitors,
+    Your top 3 moves this week, What NOT to do).
+
+    Returns empty string when the heading isn't present -- callers decide
+    how to degrade (usually: just omit that block from the expanded view).
+    """
+    match = re.search(
+        rf"\*\*{re.escape(heading)}\*\*\s*\n+(.+?)(?:\n\n\*\*|$)",
+        executive_summary,
+        re.DOTALL,
+    )
+    return match.group(1).strip() if match else ""
+
+
+def top_patterns(report: AnalysisReport, n: int = 3) -> list:
+    """The N highest-frequency patterns, for the Biggest Opportunity's
+    short evidence bullets. Reuses the same deterministic Pattern records
+    charted elsewhere -- no new extraction, no repeated LLM prose."""
+    return sorted(report.patterns, key=lambda p: -p.frequency_pct)[:n]
+
+
 def pattern_chart_data(report: AnalysisReport) -> dict:
     """Labels + frequency values for the winning-patterns bar chart."""
     return {

@@ -20,9 +20,11 @@ from adintel.report_dashboard import (
     data_quality_summary,
     extract_headline,
     extract_strategy_name,
+    extract_summary_section,
     gap_coverage_chart_data,
     gap_evidence_cards,
     pattern_chart_data,
+    top_patterns,
 )
 
 
@@ -172,3 +174,25 @@ def test_competitive_scorecard_compares_user_and_winner_creative_dna():
     assert scorecard["competitor_score"] > scorecard["user_score"]
     social_proof = next(row for row in scorecard["rows"] if row["dimension"] == "Social proof")
     assert social_proof["gap"] == -10.0
+
+
+def test_extract_summary_section_pulls_named_block():
+    report = _make_report()
+    section = extract_summary_section(report.executive_summary, "What's working")
+    assert section == "Competitors lean aspirational."
+
+
+def test_extract_summary_section_returns_empty_when_missing():
+    assert extract_summary_section("**Headline**\nJust a headline.", "What NOT to do") == ""
+
+
+def test_top_patterns_sorts_by_frequency_descending():
+    report = _make_report()
+    top = top_patterns(report, n=1)
+    assert len(top) == 1
+    assert top[0].category == "hook"
+
+
+def test_top_patterns_respects_n():
+    report = _make_report()
+    assert len(top_patterns(report, n=5)) == 2

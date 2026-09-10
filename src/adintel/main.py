@@ -37,11 +37,14 @@ from .report_dashboard import (  # noqa: E402
     data_quality_summary,
     extract_headline,
     extract_strategy_name,
+    extract_summary_section,
     gap_coverage_chart_data,
     gap_evidence_cards,
     pattern_chart_data,
+    top_patterns,
 )
 from .storage import get_store  # noqa: E402
+from .text_presentation import sentence_preview, truncate_words  # noqa: E402
 
 # ────────────────────────────────────────────────────────────────
 # Setup
@@ -60,6 +63,8 @@ CREATIVE_DIR.mkdir(parents=True, exist_ok=True)
 app = FastAPI(title="AdIntel", version="0.1.0")
 templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 templates.env.filters["report_md"] = render_report_markdown
+templates.env.filters["sentence_preview"] = sentence_preview
+templates.env.filters["truncate_words"] = truncate_words
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 orchestrator = Orchestrator(creative_output_dir=CREATIVE_DIR)
@@ -133,6 +138,10 @@ def _report_context(report: AnalysisReport, report_id: str | None) -> dict:
         "report_id": report_id,
         "headline": extract_headline(report.executive_summary),
         "strategy_name": extract_strategy_name(report.executive_summary),
+        "whats_working": extract_summary_section(report.executive_summary, "What's working for competitors"),
+        "top_moves": extract_summary_section(report.executive_summary, "Your top 3 moves this week"),
+        "what_not_to_do": extract_summary_section(report.executive_summary, "What NOT to do"),
+        "opportunity_evidence": top_patterns(report, n=3),
         "pattern_chart": pattern_chart_data(report),
         "gap_chart": gap_coverage_chart_data(report),
         "gap_evidence": gap_evidence_cards(report),
