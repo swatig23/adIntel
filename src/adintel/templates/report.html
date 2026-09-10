@@ -83,6 +83,14 @@ INSIGHT -> EVIDENCE -> ACTION -> CREATIVE. -->
 
 <div class="space-y-6">
 
+  <div class="flex justify-end">
+    <button type="button"
+      onclick="typeof resetAnalysis !== 'undefined' ? resetAnalysis() : (window.location.href='/')"
+      class="text-xs font-semibold text-[var(--violet)] border border-[var(--violet)]/30 rounded-lg px-4 py-2 hover:bg-[var(--violet)] hover:text-white transition-colors">
+      &larr; New Analysis
+    </button>
+  </div>
+
   <!-- Pipeline strip: makes the agent flow legible at a glance, and makes
        it visually obvious that everything downstream traces back to
        competitor ad data. Purely presentational -- no new data. -->
@@ -176,7 +184,7 @@ INSIGHT -> EVIDENCE -> ACTION -> CREATIVE. -->
   <!-- 2. WHAT ARE COMPETITORS DOING -->
   <section class="card card-shadow p-5">
     <h2 class="display font-bold text-base mb-1">Winning Patterns</h2>
-    <p class="text-xs text-[var(--ink-soft)] mb-4">Extracted directly from competitor reference ads pulled from the dataset above.</p>
+    <p class="text-xs text-[var(--ink-soft)] mb-4">Recurring creative patterns extracted from competitor reference ads.</p>
     <div class="h-56 mb-5">
       <canvas id="patternChart"></canvas>
     </div>
@@ -292,8 +300,8 @@ INSIGHT -> EVIDENCE -> ACTION -> CREATIVE. -->
   {% if report.generated_creatives %}
   <section class="card card-shadow p-6">
     <h2 class="display font-bold text-xl mb-1">Fresh Ad Creatives</h2>
-    <p class="text-sm text-[var(--ink-soft)] mb-5">AI-generated concepts informed by winning competitor patterns.</p>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <p class="text-sm text-[var(--ink-soft)] mb-5">Creative concepts informed by recurring competitor patterns.</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for c in report.generated_creatives %}
       <div class="rounded-xl overflow-hidden bg-[#f1e4e0] border border-[var(--line)] flex flex-col">
         <img src="/creatives/{{ c.filename }}" alt="Generated creative" class="w-full aspect-square object-cover" />

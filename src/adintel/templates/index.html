@@ -223,6 +223,7 @@
   <!-- 5. ANALYSIS FORM -->
   <section id="analysis-form" class="py-16 md:py-20 border-t border-[var(--line)] scroll-mt-6">
     <div class="max-w-[1100px] mx-auto">
+      <div id="analysis-input-area">
       <p class="eyebrow text-[var(--violet)] mb-3 text-center">Get started</p>
       <h2 class="display text-3xl md:text-4xl font-extrabold mb-10 text-center tracking-tight">Start your analysis</h2>
 
@@ -371,10 +372,12 @@
             </div>
           </div>
 
-          <div id="report"></div>
         </div>
 
       </div>
+      </div><!-- /#analysis-input-area -->
+
+      <div id="report"></div>
     </div>
   </section>
 
@@ -428,8 +431,17 @@
         el.classList.remove('stage-active');
         el.classList.add('stage-done');
       });
+      document.getElementById('analysis-input-area').classList.add('hidden');
     }
   });
+
+  function resetAnalysis() {
+    document.getElementById('report').innerHTML = '';
+    document.getElementById('analysis-input-area').classList.remove('hidden');
+    const placeholder = document.getElementById('results-placeholder');
+    if (placeholder) placeholder.removeAttribute('style');
+    document.getElementById('analysis-form').scrollIntoView({ behavior: 'smooth' });
+  }
 </script>
 
 </body>
