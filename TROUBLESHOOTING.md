@@ -103,9 +103,8 @@ gcloud services enable aiplatform.googleapis.com
 
 ### Option B (Vertex AI) — `404 model not found` for image model
 - Confirm `GEMINI_IMAGE_MODEL=gemini-2.5-flash-image` in `.env`
-- Confirm `GCP_LOCATION=us-central1` (or whatever region has the model)
-- Check model availability in your region:
-  https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versioning
+- Confirm `GCP_LOCATION=global` — `gemini-2.5-flash-image` requires `global`, not a regional endpoint
+- Check model availability: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versioning
 
 ### `429 RESOURCE_EXHAUSTED` (rate limit)
 - Free-tier / quota limits hit. Wait 60 seconds and retry.
@@ -146,9 +145,9 @@ regex if needed.
 1. **"No saved report"** — the report failed to persist (check server logs for
    storage errors). Re-run the analysis; if Firestore is misconfigured,
    add `GCP_PROJECT_ID` to `.env` or check Firestore init logs.
-2. **"Image generation failed. Check your GOOGLE_API_KEY quota"** — your key
-   has no image generation quota (AI Studio free tier) or Vertex AI auth
-   isn't set up. Switch to Option B (Vertex AI) — see auth section above.
+2. **"Image generation failed. Check Vertex AI access, billing, or model availability."** — Vertex AI
+   auth isn't configured correctly, billing isn't enabled on the project, or the model is
+   unavailable. Switch to Option B (Vertex AI) — see auth section above.
 3. **"disabled (IMAGE_GENERATION_ENABLED=false)"** — the kill switch is active.
    Set `IMAGE_GENERATION_ENABLED=true` in `.env` and restart.
 4. **"did not return any image bytes"** — the model returned no image, often
@@ -226,7 +225,7 @@ Use this priority order to guarantee SOMETHING works for your demo:
 1. **Full pipeline with BigQuery real data** (best) — `DATA_SOURCE=bq_political`
 2. **Full pipeline with synthetic stub data** — `DATA_SOURCE=meta_stub`
    (still 100% functional, just not "real" data — acceptable per hackathon rules)
-3. **Partial pipeline** — if creative generation (Nano Banana) is flaky,
+3. **Partial pipeline** — if creative generation is flaky,
    set `generate_creatives=false` in the request form and demo just the
    pattern-analysis + gap-report parts
 4. **Static screenshots** — if the live app breaks right before deadline,

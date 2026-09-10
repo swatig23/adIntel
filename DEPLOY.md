@@ -44,7 +44,7 @@ gcloud run deploy adintel \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars "GOOGLE_API_KEY=YOUR_AI_STUDIO_KEY,DATA_SOURCE=meta_stub,USE_META_STUB=true,GCP_PROJECT_ID=YOUR_PROJECT_ID,GCP_LOCATION=us-central1"
+  --set-env-vars "GOOGLE_API_KEY=YOUR_AI_STUDIO_KEY,DATA_SOURCE=meta_stub,USE_META_STUB=true,GCP_PROJECT_ID=YOUR_PROJECT_ID,GCP_LOCATION=global"
 ```
 
 **Option B — Vertex AI auth (recommended; no API key needed):**
@@ -55,7 +55,7 @@ gcloud run deploy adintel \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars "DATA_SOURCE=meta_stub,USE_META_STUB=true,GCP_PROJECT_ID=YOUR_PROJECT_ID,GCP_LOCATION=us-central1,IMAGE_GENERATION_ENABLED=true"
+  --set-env-vars "DATA_SOURCE=meta_stub,USE_META_STUB=true,GCP_PROJECT_ID=YOUR_PROJECT_ID,GCP_LOCATION=global,IMAGE_GENERATION_ENABLED=true"
 ```
 With Option B, leave `GOOGLE_API_KEY` out of `--set-env-vars` entirely.
 The app automatically uses the Cloud Run service account's credentials
