@@ -147,8 +147,47 @@ def _report_context(report: AnalysisReport, report_id: str | None) -> dict:
 # ────────────────────────────────────────────────────────────────
 
 
+def _live_status_label(using_stub: bool, data_source: str) -> str:
+    """Short, accurate header badge text for the landing page. Never
+    claims a backend that isn't actually active."""
+    if using_stub:
+        return "DEMO MODE \u00b7 Stubbed Data"
+    if data_source.startswith("bq_"):
+        return "LIVE DATA \u00b7 BigQuery"
+    if data_source == "meta_live":
+        return "LIVE DATA \u00b7 Meta Ad Library"
+    return f"LIVE DATA \u00b7 {data_source}"
+
+
+def _latest_metrics() -> dict | None:
+    """Best-effort metrics strip for the landing page, pulled from the
+    most recently persisted analysis (if any). Returns None when no
+    analysis has been run yet -- the template falls back to neutral
+    placeholders ("--") instead of fabricating numbers. Any storage
+    hiccup here must never break the landing page, so failures are
+    swallowed and logged, same policy as the /analyze persistence path.
+    """
+    try:
+        recent = store.list_recent(limit=1)
+        if not recent:
+            return None
+        report = store.load(recent[0]["id"])
+        if not report:
+            return None
+        return {
+            "ads": sum(len(c.ads) for c in report.competitors),
+            "patterns": len(report.patterns),
+            "gaps": sum(1 for g in report.gaps if not g.user_has),
+            "creatives": len(report.generated_creatives),
+        }
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"[main] could not load landing-page metrics: {e}")
+        return None
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    using_stub = settings.data_source == "meta_stub" and settings.use_meta_stub
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -157,8 +196,10 @@ async def index(request: Request):
             # flag that only matters when data_source=="meta_stub" -- so
             # BigQuery/Kaggle-backed runs incorrectly showed "DEMO MODE"
             # forever. Gate it on the actual active data_source instead.
-            "using_stub": settings.data_source == "meta_stub" and settings.use_meta_stub,
+            "using_stub": using_stub,
             "data_source": settings.data_source,
+            "status_label": _live_status_label(using_stub, settings.data_source),
+            "metrics": _latest_metrics(),
         },
     )
 

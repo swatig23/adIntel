@@ -8,9 +8,22 @@ from __future__ import annotations
 import asyncio
 import os
 
-# Force stub mode before importing anything that reads settings
+# Force stub mode before importing anything that reads settings. Both
+# vars must be pinned explicitly (not just USE_META_STUB) since .env may
+# set DATA_SOURCE to a live backend (e.g. bq_kaggle_transcripts) for the
+# actual deployment -- this smoke test must stay backend-agnostic.
 os.environ["USE_META_STUB"] = "true"
+os.environ["DATA_SOURCE"] = "meta_stub"
+os.environ["BQ_SKIP_LONGEVITY_FILTER"] = "false"
 os.environ.setdefault("GOOGLE_API_KEY", "test-placeholder")
+
+from adintel.config import get_settings  # noqa: E402
+
+# get_settings() is an lru_cache singleton -- if another test module
+# already called it (e.g. test_longevity_skip_filter.py, which runs
+# earlier alphabetically), the cached Settings instance won't reflect
+# the env vars just set above unless we force a refresh here.
+get_settings.cache_clear()
 
 from adintel.agents.ingest import IngestAgent  # noqa: E402
 from adintel.agents.longevity import LongevityAgent  # noqa: E402
@@ -29,6 +42,15 @@ def test_ingest_returns_ads():
 
 
 def test_longevity_filters_winners():
+    # Other test modules (e.g. test_longevity_skip_filter.py) clear the
+    # get_settings() cache in their own teardown, which would otherwise
+    # let this test's Settings silently re-read BQ_SKIP_LONGEVITY_FILTER
+    # from .env (which may be "true" for a live bq_kaggle_transcripts
+    # deployment) instead of the "false" this test actually needs to
+    # exercise the real 90-day filter.
+    os.environ["BQ_SKIP_LONGEVITY_FILTER"] = "false"
+    get_settings.cache_clear()
+
     async def _fetch():
         return await IngestAgent(per_brand_limit=30).run(["Ray-Ban"])
 

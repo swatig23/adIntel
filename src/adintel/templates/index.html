@@ -90,167 +90,228 @@
       100% { width: 96%; }
     }
     .progress-fill { animation: barSlide 65s cubic-bezier(0.2, 0.6, 0.4, 1) forwards; }
+
+    .step-num {
+      font-family: 'Playfair Display', Georgia, serif;
+      color: var(--violet);
+      opacity: 0.35;
+    }
   </style>
 </head>
 <body class="min-h-screen">
 
-<div class="max-w-7xl mx-auto px-6 md:px-10 py-10">
+<div class="max-w-7xl mx-auto px-6 md:px-10 py-6">
 
-  <!-- Header -->
-  <header class="flex items-center justify-between mb-8">
-    <h1 class="display text-3xl font-extrabold">AdIntel<span class="text-[var(--violet)]">.</span></h1>
-    <div class="text-right">
-      <p class="text-sm text-[var(--ink-soft)]">Competitor Ad Intelligence</p>
-      {% if using_stub %}
-      <p class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold inline-block mt-1">Demo Mode &middot; Stubbed Data</p>
-      {% elif data_source %}
-      <p class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold inline-block mt-1">Live Source &middot; {{ data_source }}</p>
-      {% endif %}
-    </div>
+  <!-- 1. HEADER -->
+  <header class="flex items-center justify-between mb-10 md:mb-16">
+    <h1 class="display text-2xl font-extrabold">AdIntel<span class="text-[var(--violet)]">.</span></h1>
+    <span class="text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide
+      {% if using_stub %}bg-amber-100 text-amber-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">
+      {{ status_label }}
+    </span>
   </header>
 
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- 2. HERO -->
+  <section class="max-w-3xl mb-16 md:mb-20">
+    <h2 class="display text-4xl md:text-5xl font-extrabold leading-tight mb-5">
+      Your competitors already tested the creative.<br class="hidden md:block" />
+      AdIntel tells you what worked.
+    </h2>
+    <p class="text-lg text-[var(--ink-soft)] leading-relaxed mb-8 max-w-2xl">
+      Analyze proven competitor ads, uncover repeatable creative patterns, identify
+      strategic gaps, and turn those insights into fresh ad concepts.
+    </p>
+    <a href="#analysis-form" class="submit-btn inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold">
+      Start an Analysis
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+      </svg>
+    </a>
+  </section>
 
-    <!-- Left: form + progress, sticky sidebar on large screens -->
-    <div class="lg:col-span-4">
-      <div class="card card-shadow p-6 lg:sticky lg:top-6">
-        <h2 class="display font-bold text-lg mb-1">New Analysis</h2>
-        <p class="text-sm text-[var(--ink-soft)] mb-5">Learn from proven winners, then generate fresh creatives.</p>
+  <!-- 3. THREE-STEP VALUE PROPOSITION -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 md:mb-20">
+    <div class="card card-shadow p-6">
+      <div class="step-num text-4xl font-extrabold mb-2">01</div>
+      <h3 class="display font-bold text-lg mb-1.5">Discover</h3>
+      <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Pull competitor ads from BigQuery.</p>
+    </div>
+    <div class="card card-shadow p-6">
+      <div class="step-num text-4xl font-extrabold mb-2">02</div>
+      <h3 class="display font-bold text-lg mb-1.5">Decode</h3>
+      <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Gemini extracts the creative patterns behind proven ads.</p>
+    </div>
+    <div class="card card-shadow p-6">
+      <div class="step-num text-4xl font-extrabold mb-2">03</div>
+      <h3 class="display font-bold text-lg mb-1.5">Create</h3>
+      <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Turn strategic gaps into fresh ad concepts.</p>
+    </div>
+  </section>
 
-        <form
-          hx-post="/analyze"
-          hx-target="#report"
-          hx-swap="innerHTML"
-          hx-indicator="#progress-overlay"
-          hx-disabled-elt="#submit-btn"
-        >
-          <div class="space-y-5">
-            <div>
-              <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">Your Brand</label>
-              <input
-                name="user_brand"
-                required
-                placeholder="e.g., BMW"
-                class="field-input w-full"
-              />
-            </div>
+  <!-- 4. PRODUCT OUTCOME / METRICS STRIP -->
+  <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 md:mb-20">
+    <div class="card card-shadow p-5 text-center">
+      <div class="display text-3xl font-extrabold">{{ metrics.ads if metrics else "--" }}</div>
+      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium uppercase tracking-wide">Proven ads</div>
+    </div>
+    <div class="card card-shadow p-5 text-center">
+      <div class="display text-3xl font-extrabold">{{ metrics.patterns if metrics else "--" }}</div>
+      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium uppercase tracking-wide">Winning patterns</div>
+    </div>
+    <div class="card card-shadow p-5 text-center">
+      <div class="display text-3xl font-extrabold">{{ metrics.gaps if metrics else "--" }}</div>
+      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium uppercase tracking-wide">Strategic gaps</div>
+    </div>
+    <div class="card card-shadow p-5 text-center">
+      <div class="display text-3xl font-extrabold">{{ metrics.creatives if metrics else "--" }}</div>
+      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium uppercase tracking-wide">Fresh creatives</div>
+    </div>
+  </section>
 
-            <div>
-              <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">
-                Competitors <span class="font-normal">(comma-separated, up to 10)</span>
+  <!-- 5. ANALYSIS FORM -->
+  <section id="analysis-form" class="mb-14 scroll-mt-6">
+    <h2 class="display text-2xl md:text-3xl font-extrabold mb-6 text-center">Start your analysis</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left: form + progress, sticky sidebar on large screens -->
+      <div class="lg:col-span-5 lg:col-start-2">
+        <div class="card card-shadow p-6 lg:sticky lg:top-6">
+          <form
+            hx-post="/analyze"
+            hx-target="#report"
+            hx-swap="innerHTML"
+            hx-indicator="#progress-overlay"
+            hx-disabled-elt="#submit-btn"
+          >
+            <div class="space-y-5">
+              <div>
+                <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">Your Brand</label>
+                <input
+                  name="user_brand"
+                  required
+                  placeholder="e.g., BMW"
+                  class="field-input w-full"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">
+                  Competitors <span class="font-normal">(comma-separated, up to 10)</span>
+                </label>
+                <input
+                  name="competitors"
+                  required
+                  placeholder="Audi, AutoZone"
+                  class="field-input w-full"
+                />
+                <p class="text-xs text-[var(--ink-soft)] mt-1.5">
+                  {% if data_source == "bq_kaggle_transcripts" %}
+                  Works best with well-known consumer brands already in our dataset (e.g. BMW, Audi, AutoZone, 7up).
+                  {% else %}
+                  Any brand name works in demo mode.
+                  {% endif %}
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">
+                  Industry hint <span class="font-normal">(optional)</span>
+                </label>
+                <input
+                  name="industry_hint"
+                  placeholder="e.g., DTC eyewear"
+                  class="field-input w-full"
+                />
+              </div>
+
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="generate_creatives" checked class="w-5 h-5 accent-[var(--violet)]" />
+                <span class="text-sm text-[var(--ink-soft)]">Generate 3 fresh ad creatives</span>
               </label>
-              <input
-                name="competitors"
-                required
-                placeholder="Audi, AutoZone"
-                class="field-input w-full"
-              />
-              <p class="text-xs text-[var(--ink-soft)] mt-1.5">
-                {% if data_source == "bq_kaggle_transcripts" %}
-                Works best with well-known consumer brands already in our dataset (e.g. BMW, Audi, AutoZone, 7up).
-                {% else %}
-                Any brand name works in demo mode.
-                {% endif %}
-              </p>
+
+              <button
+                id="submit-btn"
+                type="submit"
+                class="submit-btn w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2"
+              >
+                <span class="btn-idle items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  Analyze Competitors
+                </span>
+                <span class="btn-loading items-center gap-2">
+                  <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Working On It...
+                </span>
+              </button>
             </div>
+          </form>
 
-            <div>
-              <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">
-                Industry hint <span class="font-normal">(optional)</span>
-              </label>
-              <input
-                name="industry_hint"
-                placeholder="e.g., DTC eyewear"
-                class="field-input w-full"
-              />
-            </div>
-
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" name="generate_creatives" checked class="w-5 h-5 accent-[var(--violet)]" />
-              <span class="text-sm text-[var(--ink-soft)]">Generate 3 fresh ad creatives with Nano Banana</span>
-            </label>
-
-            <button
-              id="submit-btn"
-              type="submit"
-              class="submit-btn w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2"
-            >
-              <span class="btn-idle items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          <!-- Fun animated progress overlay, shown only while HTMX request is in flight -->
+          <div id="progress-overlay" class="mt-6 pt-6 border-t border-[var(--bg)]">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-8 h-8 rounded-full bg-[#f1e4e0] flex items-center justify-center animate-pulse flex-shrink-0">
+                <svg class="w-4 h-4 text-[var(--violet)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
-                Analyze Competitors
-              </span>
-              <span class="btn-loading items-center gap-2">
-                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Working On It...
-              </span>
-            </button>
-          </div>
-        </form>
+              </div>
+              <div>
+                <p class="display text-sm font-bold">Analyzing competitor ads&hellip;</p>
+                <p class="text-xs text-[var(--ink-soft)]">Usually takes 45&ndash;75 seconds.</p>
+              </div>
+            </div>
 
-        <!-- Fun animated progress overlay, shown only while HTMX request is in flight -->
-        <div id="progress-overlay" class="mt-6 pt-6 border-t border-[var(--bg)]">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-8 h-8 rounded-full bg-[#f1e4e0] flex items-center justify-center animate-pulse flex-shrink-0">
-              <svg class="w-4 h-4 text-[var(--violet)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-              </svg>
+            <div class="h-2 bg-[var(--bg)] rounded-full overflow-hidden mb-5">
+              <div class="progress-fill h-full rounded-full bg-gradient-to-r from-[var(--violet)] to-[var(--fuchsia)]" style="width: 6%;"></div>
             </div>
-            <div>
-              <p class="display text-sm font-bold">Analyzing competitor ads&hellip;</p>
-              <p class="text-xs text-[var(--ink-soft)]">Usually takes 45&ndash;75 seconds.</p>
-            </div>
-          </div>
 
-          <div class="h-2 bg-[var(--bg)] rounded-full overflow-hidden mb-5">
-            <div class="progress-fill h-full rounded-full bg-gradient-to-r from-[var(--violet)] to-[var(--fuchsia)]" style="width: 6%;"></div>
-          </div>
-
-          <div class="space-y-2.5 text-sm">
-            <div class="flex items-center gap-2 stage" data-stage="1">
-              <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-              <span class="stage-label text-[var(--ink-soft)]">Fetching competitor ads</span>
-            </div>
-            <div class="flex items-center gap-2 stage" data-stage="2">
-              <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-              <span class="stage-label text-[var(--ink-soft)]">Flagging proven winners</span>
-            </div>
-            <div class="flex items-center gap-2 stage" data-stage="3">
-              <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-              <span class="stage-label text-[var(--ink-soft)]">Extracting patterns with Gemini</span>
-            </div>
-            <div class="flex items-center gap-2 stage" data-stage="4">
-              <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-              <span class="stage-label text-[var(--ink-soft)]">Finding your gaps</span>
-            </div>
-            <div class="flex items-center gap-2 stage" data-stage="5">
-              <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-              <span class="stage-label text-[var(--ink-soft)]">Generating creatives</span>
-            </div>
-            <div class="flex items-center gap-2 stage" data-stage="6">
-              <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-              <span class="stage-label text-[var(--ink-soft)]">Writing executive summary</span>
+            <div class="space-y-2.5 text-sm">
+              <div class="flex items-center gap-2 stage" data-stage="1">
+                <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
+                <span class="stage-label text-[var(--ink-soft)]">Fetching competitor ads</span>
+              </div>
+              <div class="flex items-center gap-2 stage" data-stage="2">
+                <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
+                <span class="stage-label text-[var(--ink-soft)]">Flagging proven winners</span>
+              </div>
+              <div class="flex items-center gap-2 stage" data-stage="3">
+                <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
+                <span class="stage-label text-[var(--ink-soft)]">Extracting patterns with Gemini</span>
+              </div>
+              <div class="flex items-center gap-2 stage" data-stage="4">
+                <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
+                <span class="stage-label text-[var(--ink-soft)]">Finding your gaps</span>
+              </div>
+              <div class="flex items-center gap-2 stage" data-stage="5">
+                <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
+                <span class="stage-label text-[var(--ink-soft)]">Generating creatives</span>
+              </div>
+              <div class="flex items-center gap-2 stage" data-stage="6">
+                <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
+                <span class="stage-label text-[var(--ink-soft)]">Writing executive summary</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Right: report target -->
+      <div class="lg:col-span-8">
+        <div id="report"></div>
+      </div>
+
     </div>
+  </section>
 
-    <!-- Right: report target, uses the remaining width -->
-    <div class="lg:col-span-8">
-      <div id="report"></div>
-    </div>
-
-  </div>
-
-  <!-- Footer -->
+  <!-- 6. SMALL GOOGLE STACK FOOTER -->
   <footer class="mt-14 text-center">
     <p class="text-xs text-[var(--ink-soft)]">
-      Built with Google ADK &middot; Gemini 2.5 &middot; Nano Banana &middot; Firebase &middot; Cloud Run
+      Built with Google ADK &middot; Gemini &middot; BigQuery &middot; Cloud Run
     </p>
   </footer>
 

@@ -35,14 +35,21 @@ def _dateless_ad(page_name: str) -> Ad:
 
 def test_default_behaviour_filters_out_dateless_ads():
     """Sanity check: WITHOUT the flag, dateless ads (days_running=0)
-    are correctly excluded by the normal 90-day filter."""
-    get_settings.cache_clear()
-    os.environ.pop("BQ_SKIP_LONGEVITY_FILTER", None)
-    get_settings.cache_clear()
+    are correctly excluded by the normal 90-day filter.
 
-    competitors = [Competitor(name="BMW", ads=[_dateless_ad("BMW"), _dateless_ad("BMW")])]
-    winners = LongevityAgent(winner_threshold_days=90).run(competitors)
-    assert winners == []  # confirms the bug this flag exists to prevent
+    Explicitly set to "false" (not just popped) so this stays robust
+    regardless of whatever BQ_SKIP_LONGEVITY_FILTER value lives in the
+    active .env for the currently-configured data source -- popping the
+    env var override would just fall through to .env's own value."""
+    os.environ["BQ_SKIP_LONGEVITY_FILTER"] = "false"
+    get_settings.cache_clear()
+    try:
+        competitors = [Competitor(name="BMW", ads=[_dateless_ad("BMW"), _dateless_ad("BMW")])]
+        winners = LongevityAgent(winner_threshold_days=90).run(competitors)
+        assert winners == []  # confirms the bug this flag exists to prevent
+    finally:
+        os.environ.pop("BQ_SKIP_LONGEVITY_FILTER", None)
+        get_settings.cache_clear()
 
 
 def test_skip_filter_treats_all_ads_as_winners():

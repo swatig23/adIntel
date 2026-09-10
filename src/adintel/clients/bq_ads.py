@@ -76,6 +76,15 @@ def _get_client(project_id: str):
     return bigquery.Client(project=project_id)
 
 
+def _normalize_table_id(table: str) -> str:
+    """Accept both legacy \"project:dataset.table\" (colon) and standard
+    \"project.dataset.table\" (dot) formats -- BigQuery's console/docs
+    commonly show the colon form, but Standard SQL backtick references
+    require the dot form. Only the FIRST colon is replaced, since a
+    project id itself never contains a colon."""
+    return table.replace(":", ".", 1) if ":" in table else table
+
+
 def _cast_creative_type(bq_ad_type: str | None) -> CreativeType:
     """Map BQ ad_type strings to our CreativeType enum."""
     if not bq_ad_type:
@@ -326,7 +335,7 @@ async def fetch_kaggle_ads_for_advertiser(advertiser_name: str, limit: int = 50)
     if not settings.bq_kaggle_table:
         raise RuntimeError("BQ_KAGGLE_TABLE not set")
 
-    table = settings.bq_kaggle_table
+    table = _normalize_table_id(settings.bq_kaggle_table)
 
     # TODO(user): the WHERE-clause below assumes an `advertiser_name` column.
     # If your Kaggle dataset uses a different name (e.g. `brand`, `page_name`),
@@ -380,7 +389,7 @@ async def fetch_transcripts_ads_for_advertiser(advertiser_name: str, limit: int 
     if not settings.bq_kaggle_table:
         raise RuntimeError("BQ_KAGGLE_TABLE not set")
 
-    table = settings.bq_kaggle_table
+    table = _normalize_table_id(settings.bq_kaggle_table)
     sql = f"""
         SELECT Category, Advertiser, Product_or_spot, Ad_copy
         FROM `{table}`
