@@ -65,6 +65,14 @@ class Settings(BaseSettings):
     # agents and produce the same AnalysisReport shape.
     adk_enabled: bool = True
 
+    # On-demand Gemini image generation for the "Generate AI Visual" button
+    # on each creative card. Set IMAGE_GENERATION_ENABLED=false to prevent
+    # all on-demand image API calls -- useful when GOOGLE_API_KEY has no
+    # image quota or in cost-controlled environments. The UI shows a graceful
+    # disabled state; no silent fallback to a billable call will occur.
+    # The /analyze pipeline is NOT affected by this flag.
+    image_generation_enabled: bool = True
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

@@ -13,11 +13,12 @@ Run locally:
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from loguru import logger
@@ -28,6 +29,7 @@ load_dotenv()
 from .agents.adk_pipeline import run_via_adk  # noqa: E402
 from .agents.orchestrator import Orchestrator  # noqa: E402
 from .clients.curated_visual import asset_directory  # noqa: E402
+from .clients.gemini import generate_image  # noqa: E402
 from .config import get_settings  # noqa: E402
 from .markdown_lite import render_report_markdown  # noqa: E402
 from .models import AnalysisReport, AnalysisRequest  # noqa: E402
@@ -273,6 +275,86 @@ async def serve_creative(filename: str):
     if not path.exists():
         raise HTTPException(404, f"Creative not found: {safe}")
     return FileResponse(path, media_type="image/png")
+
+
+@app.post("/generate-creative")
+async def generate_creative_image(
+    creative_index: int = Form(...),
+    report_id: str = Form(...),
+):
+    """On-demand Gemini image generation for a single creative card.
+
+    Intentionally separated from /analyze -- the pipeline never calls this.
+    Requires IMAGE_GENERATION_ENABLED=true (default) and a valid GOOGLE_API_KEY
+    with image-generation quota. Each call covers exactly one creative; the
+    other creatives are never touched.
+    """
+    if not settings.image_generation_enabled:
+        return JSONResponse(
+            {
+                "status": "disabled",
+                "message": "Image generation is currently disabled (IMAGE_GENERATION_ENABLED=false).",
+            },
+            status_code=503,
+        )
+
+    if not report_id or report_id == "None":
+        return JSONResponse(
+            {"status": "error", "message": "No saved report found for this analysis."},
+            status_code=400,
+        )
+
+    report = store.load(report_id)
+    if not report:
+        return JSONResponse(
+            {"status": "error", "message": "Report not found or has expired."},
+            status_code=404,
+        )
+
+    idx = creative_index - 1  # convert to 0-based
+    if idx < 0 or idx >= len(report.generated_creatives):
+        return JSONResponse(
+            {"status": "error", "message": "Creative index out of range."},
+            status_code=400,
+        )
+
+    creative = report.generated_creatives[idx]
+    brand = report.request.user_brand
+
+    # Build a clean advertising prompt.  Copy and headlines live in the UI
+    # card, not inside the generated image -- the image must be text-free.
+    prompt = (
+        f"A clean advertising visual for {brand}. "
+        f"{creative.hook}. "
+        f"Professional advertising photography, studio quality, "
+        f"clean composition, aspirational mood, commercial product photography. "
+        f"Absolutely no text, no typography, no headlines, no captions, "
+        f"no logos, no watermarks, no words of any kind in the image."
+    )
+
+    stem = Path(creative.filename).stem
+    out_filename = f"{stem}_gemini.png"
+    out_path = CREATIVE_DIR / out_filename
+
+    try:
+        await generate_image(prompt, out_path)
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"[generate-creative] image generation failed: {e}")
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": "Image generation failed. Check your GOOGLE_API_KEY quota and try again.",
+            },
+            status_code=500,
+        )
+
+    cache_bust = int(time.time())
+    return JSONResponse(
+        {
+            "status": "ok",
+            "image_url": f"/creatives/{out_filename}?v={cache_bust}",
+        }
+    )
 
 
 @app.get("/demo-assets/{filename}")
