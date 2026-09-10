@@ -2,6 +2,46 @@
 Product design: a marketer scans this in 5 seconds -- headline insight,
 three charts, done. Full narrative/per-item detail is one click away
 via <details> instead of being the first thing on the page. -->
+{% macro evidence_section(gap) -%}
+{% set cards = gap_evidence.get(gap.pattern.description, []) %}
+<details class="mt-3 group">
+  <summary class="text-xs font-semibold text-[var(--violet)] cursor-pointer select-none list-none flex items-center gap-1.5">
+    <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    Why this recommendation?
+  </summary>
+  <div class="mt-3 pt-3 border-t border-black/10">
+    <p class="text-xs text-[var(--ink-soft)] leading-relaxed">
+      <strong>Pattern evidence:</strong> {{ "%.0f"|format(gap.pattern.frequency_pct) }}% of analyzed winner ads showed this pattern.
+      {% if gap.evidence_summary %} {{ gap.evidence_summary }}{% endif %}
+    </p>
+    {% if cards %}
+    <div class="grid grid-cols-1 md:grid-cols-{{ [cards|length, 3]|min }} gap-3 mt-3">
+      {% for ad in cards %}
+      <article class="rounded-lg border border-[var(--bg)] bg-white overflow-hidden">
+        {% if ad.image_url %}
+        <img src="{{ ad.image_url }}" alt="{{ ad.brand }} supporting ad" class="w-full h-28 object-cover" loading="lazy" />
+        {% endif %}
+        <div class="p-3">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <p class="font-bold text-xs text-[var(--ink)] truncate">{{ ad.brand }}</p>
+            <span class="text-[10px] text-[var(--ink-soft)] whitespace-nowrap">{{ ad.days_running }} days active</span>
+          </div>
+          <p class="text-xs text-[var(--ink-soft)] leading-relaxed">{{ ad.body_text }}</p>
+          <div class="flex items-center justify-between gap-2 mt-2">
+            {% if ad.cta %}<span class="text-[10px] font-semibold text-[var(--violet)]">CTA: {{ ad.cta }}</span>{% endif %}
+            {% if ad.snapshot_url %}<a href="{{ ad.snapshot_url }}" target="_blank" rel="noopener noreferrer" class="text-[10px] underline text-[var(--ink-soft)] hover:text-[var(--violet)]">View source</a>{% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-xs text-[var(--ink-soft)] mt-2">Source ad previews were unavailable for this saved analysis.</p>
+    {% endif %}
+    <p class="text-[10px] text-[var(--ink-soft)] mt-3">Long-running status is a proxy for effectiveness, not confirmed ad performance.</p>
+  </div>
+</details>
+{%- endmacro %}
 <div class="space-y-6">
 
   <!-- Pipeline strip: makes the agent flow legible at a glance. Purely
@@ -98,6 +138,42 @@ via <details> instead of being the first thing on the page. -->
     </div>
   </section>
 
+  {% if scorecard.has_comparison %}
+  <!-- Creative DNA: these scores reflect observable creative features, not ad performance. -->
+  <section class="card card-shadow p-6">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
+      <div>
+        <h2 class="display font-bold text-xl mb-1">Competitive Creative DNA</h2>
+        <p class="text-sm text-[var(--ink-soft)]">A transparent comparison of observable creative signals in your ads and competitor ads.</p>
+      </div>
+      <div class="flex gap-3 text-center">
+        <div class="rounded-lg bg-[#f1e4e0] px-3 py-2"><p class="text-lg font-bold">{{ scorecard.user_score }}</p><p class="text-[10px] text-[var(--ink-soft)]">Your score</p></div>
+        <div class="rounded-lg bg-[#f1e4e0] px-3 py-2"><p class="text-lg font-bold">{{ scorecard.competitor_score }}</p><p class="text-[10px] text-[var(--ink-soft)]">Competitor avg.</p></div>
+        <div class="rounded-lg px-3 py-2 {% if scorecard.gap >= 0 %}bg-emerald-50 text-emerald-800{% else %}bg-amber-50 text-amber-800{% endif %}"><p class="text-lg font-bold">{{ "%+.0f"|format(scorecard.gap) }}</p><p class="text-[10px]">Creative gap</p></div>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-left text-xs uppercase tracking-wide text-[var(--ink-soft)] border-b border-[var(--bg)]"><tr><th class="pb-2 font-semibold">Dimension</th><th class="pb-2 text-right font-semibold">Yours</th><th class="pb-2 text-right font-semibold">Competitor avg.</th><th class="pb-2 text-right font-semibold">Gap</th></tr></thead>
+        <tbody>
+          {% for row in scorecard.rows %}
+          <tr class="border-b border-[var(--bg)] last:border-0"><td class="py-2.5 font-medium">{{ row.dimension }}</td><td class="py-2.5 text-right">{{ row.user }}/10</td><td class="py-2.5 text-right">{{ row.competitor }}/10</td><td class="py-2.5 text-right font-semibold {% if row.gap >= 0 %}text-emerald-700{% else %}text-amber-700{% endif %}">{{ "%+.1f"|format(row.gap) }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="text-[10px] text-[var(--ink-soft)] mt-4">Scores reflect Creative DNA signals extracted from available copy and creative metadata; they are not CTR, conversion, or ROAS predictions.</p>
+  </section>
+  {% endif %}
+
+  {% if scorecard.dominant_signals %}
+  <section class="rounded-xl border border-[var(--violet)]/20 bg-[#f1e4e0] p-5">
+    <p class="text-xs uppercase tracking-widest font-bold text-[var(--violet)] mb-1">Dominant competitor play</p>
+    <p class="display font-bold text-lg">{{ report.competitors | length }}/{{ report.competitors | length }} competitors use {{ scorecard.dominant_signals | join(", ") }}.</p>
+    <p class="text-sm text-[var(--ink-soft)] mt-1">This is a Creative DNA signal from the ads in this report—not a proven performance claim.</p>
+  </section>
+  {% endif %}
+
   <!-- Competitor comparison -->
   <section class="card card-shadow p-5">
     <h2 class="display font-bold text-base mb-1">Competitor Comparison</h2>
@@ -128,6 +204,14 @@ via <details> instead of being the first thing on the page. -->
             <span class="text-xs text-[var(--ink-soft)]">&middot; {{ g.pattern.category }}</span>
           </div>
           <p class="text-[var(--ink)] font-medium">{{ g.recommendation }}</p>
+          <div class="mt-3 flex items-center gap-2 text-xs"><span class="rounded-full bg-white/70 px-2 py-1 font-bold text-[var(--violet)]">Opportunity {{ "%.0f"|format(g.opportunity_score) }}/100</span><span class="text-[var(--ink-soft)]">Evidence-backed priority</span></div>
+          {{ evidence_section(g) }}
+          {% if g.action_variants %}
+          <details class="mt-3 group">
+            <summary class="text-xs font-semibold text-[var(--violet)] cursor-pointer select-none list-none flex items-center gap-1.5"><svg class="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg> Open action studio</summary>
+            <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">{% for variant in g.action_variants %}<div class="rounded-lg bg-white/70 p-3 text-xs text-[var(--ink-soft)]"><span class="font-bold text-[var(--violet)]">Variant {{ loop.index }}</span><p class="mt-1">{{ variant }}</p></div>{% endfor %}</div>
+          </details>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
@@ -154,6 +238,8 @@ via <details> instead of being the first thing on the page. -->
               <span class="text-xs text-[var(--ink-soft)]">&middot; {{ g.pattern.category }}</span>
             </div>
             <p class="text-[var(--ink)] font-medium">{{ g.recommendation }}</p>
+            <div class="mt-3 flex items-center gap-2 text-xs"><span class="rounded-full bg-white/70 px-2 py-1 font-bold text-[var(--violet)]">Opportunity {{ "%.0f"|format(g.opportunity_score) }}/100</span></div>
+            {{ evidence_section(g) }}
           </div>
         </div>
         {% endfor %}

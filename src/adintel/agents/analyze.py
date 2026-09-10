@@ -82,7 +82,7 @@ class AnalyzeAgent:
         else:
             raw = await generate_text(prompt, system=SYSTEM_PROMPT)
 
-        return self._parse_patterns(raw)
+        return self._parse_patterns(raw, winning_ads)
 
     @staticmethod
     def _format_ads(ads: Iterable[Ad]) -> str:
@@ -99,7 +99,7 @@ class AnalyzeAgent:
             )
         return "\n".join(chunks)
 
-    def _parse_patterns(self, raw: str) -> list[Pattern]:
+    def _parse_patterns(self, raw: str, winning_ads: Iterable[Ad] | None = None) -> list[Pattern]:
         # Strip common markdown fences the model sometimes adds
         cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
         try:
@@ -107,10 +107,18 @@ class AnalyzeAgent:
         except json.JSONDecodeError as e:
             logger.error(f"[AnalyzeAgent] Gemini returned unparseable JSON: {e}\n{raw[:400]}")
             return []
+        valid_ids = {ad.id for ad in winning_ads} if winning_ads is not None else None
         patterns: list[Pattern] = []
         for row in data if isinstance(data, list) else []:
             try:
-                patterns.append(Pattern(**row))
+                pattern = Pattern(**row)
+                # Never let an LLM-invented ID become product evidence. This
+                # also makes the report safe to persist and render later.
+                if valid_ids is not None:
+                    pattern.evidence_ad_ids = [
+                        ad_id for ad_id in pattern.evidence_ad_ids if ad_id in valid_ids
+                    ][:3]
+                patterns.append(pattern)
             except Exception as e:  # noqa: BLE001
                 logger.warning(f"[AnalyzeAgent] skipping malformed pattern: {e}")
         logger.info(f"[AnalyzeAgent] extracted {len(patterns)} patterns")

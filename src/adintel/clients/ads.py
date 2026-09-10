@@ -23,9 +23,9 @@ from loguru import logger
 
 from ..config import get_settings
 from ..models import Ad
-from . import bq_ads, meta_ads
+from . import bq_ads, curated_visual, meta_ads
 
-_VALID_SOURCES = {"meta_stub", "meta_live", "bq_political", "bq_kaggle", "bq_kaggle_transcripts"}
+_VALID_SOURCES = {"meta_stub", "meta_live", "bq_political", "bq_kaggle", "bq_kaggle_transcripts", "curated_visual"}
 
 
 async def fetch_ads_for_brand(brand: str, limit: int | None = None) -> list[Ad]:
@@ -64,6 +64,11 @@ async def fetch_ads_for_brand(brand: str, limit: int | None = None) -> list[Ad]:
 
     if source == "bq_kaggle_transcripts":
         return await bq_ads.fetch_transcripts_ads_for_advertiser(
+            brand, limit=limit or settings.bq_limit_per_brand
+        )
+
+    if source == "curated_visual":
+        return await curated_visual.fetch_curated_visual_ads(
             brand, limit=limit or settings.bq_limit_per_brand
         )
 

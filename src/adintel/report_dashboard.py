@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import re
 
-from .models import AnalysisReport
+from .creative_dna import DIMENSIONS, average_dimensions, dominant_signals
+from .models import Ad, AnalysisReport
 
 
 def extract_headline(executive_summary: str) -> str:
@@ -100,4 +101,70 @@ def data_quality_summary(report: AnalysisReport) -> dict:
         "total_ads": total_ads,
         "is_empty": total_ads == 0,
         "is_partial": bool(zero_ad_brands) and total_ads > 0,
+    }
+
+
+def gap_evidence_cards(report: AnalysisReport) -> dict[str, list[dict]]:
+    """Resolve each recommendation's validated IDs into render-safe ad cards.
+
+    The returned structure intentionally exposes only information that was
+    already part of the public ad record. Missing IDs simply produce no card;
+    an old saved report must never fail because a source ad disappeared.
+    """
+    ads_by_id: dict[str, Ad] = {
+        ad.id: ad for competitor in report.competitors for ad in competitor.ads
+    }
+    cards: dict[str, list[dict]] = {}
+    for gap in report.gaps:
+        cards[gap.pattern.description] = [
+            {
+                "id": ad.id,
+                "brand": ad.page_name,
+                "body_text": ad.body_text[:240],
+                "cta": ad.cta,
+                "creative_type": ad.creative_type.value.replace("_", " ").title(),
+                "days_running": ad.days_running,
+                "image_url": ad.image_url,
+                "snapshot_url": ad.snapshot_url,
+            }
+            for ad_id in gap.evidence_ad_ids
+            if (ad := ads_by_id.get(ad_id)) is not None
+        ]
+    return cards
+
+
+def competitive_scorecard(report: AnalysisReport) -> dict:
+    """Compare observable Creative DNA signals, never performance outcomes."""
+    dna_by_id = {dna.ad_id: dna for dna in report.creative_dna}
+    user_dna = [dna_by_id[ad.id] for ad in report.user_ads if ad.id in dna_by_id]
+    competitor_ads = [ad for competitor in report.competitors for ad in report.winners_for(competitor)]
+    # Curated sources can legitimately have no measured winner status. In
+    # that case compare with the retrieved ads instead of presenting blanks.
+    if not competitor_ads:
+        competitor_ads = [ad for competitor in report.competitors for ad in competitor.ads]
+    competitor_dna = [dna_by_id[ad.id] for ad in competitor_ads if ad.id in dna_by_id]
+    user = average_dimensions(user_dna)
+    competitors = average_dimensions(competitor_dna)
+    rows = [
+        {
+            "dimension": dimension,
+            "user": user[dimension],
+            "competitor": competitors[dimension],
+            "gap": round(user[dimension] - competitors[dimension], 1),
+        }
+        for dimension in DIMENSIONS
+    ]
+    user_total = round(sum(user.values()) / len(DIMENSIONS) * 10) if user_dna else 0
+    competitor_total = round(sum(competitors.values()) / len(DIMENSIONS) * 10) if competitor_dna else 0
+    by_brand: dict[str, list] = {}
+    for competitor in report.competitors:
+        rows_for_brand = [dna_by_id[ad.id] for ad in competitor.ads if ad.id in dna_by_id]
+        by_brand[competitor.name] = rows_for_brand
+    return {
+        "rows": rows,
+        "user_score": user_total,
+        "competitor_score": competitor_total,
+        "gap": user_total - competitor_total,
+        "dominant_signals": dominant_signals(by_brand),
+        "has_comparison": bool(user_dna and competitor_dna),
     }

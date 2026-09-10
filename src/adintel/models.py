@@ -87,6 +87,28 @@ class Pattern(BaseModel):
     evidence_ad_ids: list[str] = Field(default_factory=list)
 
 
+class CreativeDNA(BaseModel):
+    """Explainable, normalized attributes extracted from one ad.
+
+    These are intentionally creative signals, not performance scores. They
+    let the dashboard compare the user's ads with competitors using a stable
+    vocabulary, even when performance metrics are unavailable.
+    """
+
+    ad_id: str
+    hook_type: str
+    creative_format: str
+    has_social_proof: bool = False
+    has_offer: bool = False
+    has_urgency: bool = False
+    has_product_demo: bool = False
+    human_present: bool = False
+    cta_strength: int = Field(ge=1, le=10)
+    hook_strength: int = Field(ge=1, le=10)
+    offer_clarity: int = Field(ge=1, le=10)
+    visual_quality: int = Field(ge=1, le=10)
+
+
 class GapItem(BaseModel):
     """A specific delta between the user's ads and winning patterns."""
 
@@ -94,6 +116,16 @@ class GapItem(BaseModel):
     user_has: bool
     recommendation: str
     priority: int  # 1 = highest
+    # These IDs must point to ads that support ``pattern``. Keeping the
+    # references on the recommendation makes a saved report self-explanatory
+    # and lets the UI show the exact evidence behind each suggested action.
+    evidence_ad_ids: list[str] = Field(default_factory=list)
+    evidence_summary: str = ""
+    # Deterministic 0-100 ranking based on prevalence, the observed user gap,
+    # and strength of source evidence. Gemini writes the advice; it does not
+    # get to invent this score.
+    opportunity_score: float = Field(default=0, ge=0, le=100)
+    action_variants: list[str] = Field(default_factory=list)
 
 
 class GeneratedCreative(BaseModel):
@@ -122,6 +154,8 @@ class AnalysisReport(BaseModel):
 
     request: AnalysisRequest
     competitors: list[Competitor]
+    user_ads: list[Ad] = Field(default_factory=list)
+    creative_dna: list[CreativeDNA] = Field(default_factory=list)
     patterns: list[Pattern]
     gaps: list[GapItem]
     generated_creatives: list[GeneratedCreative] = Field(default_factory=list)

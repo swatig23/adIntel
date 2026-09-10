@@ -27,15 +27,18 @@ load_dotenv()
 
 from .agents.adk_pipeline import run_via_adk  # noqa: E402
 from .agents.orchestrator import Orchestrator  # noqa: E402
+from .clients.curated_visual import asset_directory  # noqa: E402
 from .config import get_settings  # noqa: E402
 from .markdown_lite import render_report_markdown  # noqa: E402
 from .models import AnalysisReport, AnalysisRequest  # noqa: E402
 from .report_dashboard import (  # noqa: E402
     competitor_chart_data,
+    competitive_scorecard,
     data_quality_summary,
     extract_headline,
     extract_strategy_name,
     gap_coverage_chart_data,
+    gap_evidence_cards,
     pattern_chart_data,
 )
 from .storage import get_store  # noqa: E402
@@ -132,7 +135,9 @@ def _report_context(report: AnalysisReport, report_id: str | None) -> dict:
         "strategy_name": extract_strategy_name(report.executive_summary),
         "pattern_chart": pattern_chart_data(report),
         "gap_chart": gap_coverage_chart_data(report),
+        "gap_evidence": gap_evidence_cards(report),
         "competitor_chart": competitor_chart_data(report),
+        "scorecard": competitive_scorecard(report),
         "data_quality": data_quality_summary(report),
         # When the active data source has no delivery-date signal (see
         # BQ_SKIP_LONGEVITY_FILTER), "winner" isn't a measured outcome --
@@ -259,6 +264,16 @@ async def serve_creative(filename: str):
     if not path.exists():
         raise HTTPException(404, f"Creative not found: {safe}")
     return FileResponse(path, media_type="image/png")
+
+
+@app.get("/demo-assets/{filename}")
+async def serve_demo_asset(filename: str):
+    """Serve only basename-validated assets from the curated demo corpus."""
+    safe = Path(filename).name
+    path = asset_directory() / safe
+    if not path.is_file():
+        raise HTTPException(404, f"Demo asset not found: {safe}")
+    return FileResponse(path)
 
 
 @app.get("/healthz")

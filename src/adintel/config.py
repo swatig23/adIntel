@@ -27,8 +27,13 @@ class Settings(BaseSettings):
     use_meta_stub: bool = True
 
     # Data source dispatcher -- controls IngestAgent backend selection.
-    # Valid values: "meta_stub" | "bq_political" | "meta_live" | "bq_kaggle" | "bq_kaggle_transcripts"
+    # Valid values: "meta_stub" | "bq_political" | "meta_live" | "bq_kaggle" |
+    # "bq_kaggle_transcripts" | "curated_visual"
     data_source: str = "meta_stub"
+
+    # Local, permissioned visual corpus for a reliable product demo.
+    curated_visual_file: str = "demo_ads.json"
+    curated_visual_asset_dir: str = "demo_assets"
 
     # BigQuery tables (used when data_source is bq_*).
     bq_political_table: str = "bigquery-public-data.google_political_ads.creative_stats"

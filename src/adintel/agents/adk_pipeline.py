@@ -36,6 +36,7 @@ from google.genai import types as genai_types
 from loguru import logger
 
 from ..models import AnalysisReport, AnalysisRequest
+from ..creative_dna import extract_creative_dna
 from .analyze import AnalyzeAgent
 from .create import CreateAgent
 from .gap import GapAgent
@@ -143,6 +144,7 @@ class CreateNode(BaseAgent):
             brand=req.user_brand,
             industry=req.industry_hint or "consumer",
             patterns=patterns,
+            gaps=state["gaps"],
         )
         state["creatives"] = creatives
         yield _done_event(self.name, {"creatives": creatives, "creatives_count": len(creatives)})
@@ -227,6 +229,10 @@ async def run_via_adk(
     return AnalysisReport(
         request=request,
         competitors=state["competitors"],
+        user_ads=state["user_competitor"].ads,
+        creative_dna=extract_creative_dna(
+            state["user_competitor"].ads + [ad for c in state["competitors"] for ad in c.ads]
+        ),
         patterns=state["patterns"],
         gaps=state["gaps"],
         generated_creatives=state.get("creatives", []),

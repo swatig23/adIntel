@@ -13,6 +13,7 @@ from pathlib import Path
 from loguru import logger
 
 from ..models import AnalysisReport, AnalysisRequest
+from ..creative_dna import extract_creative_dna
 from .analyze import AnalyzeAgent
 from .create import CreateAgent
 from .gap import GapAgent
@@ -67,6 +68,7 @@ class Orchestrator:
                 brand=request.user_brand,
                 industry=request.industry_hint or "consumer",
                 patterns=patterns,
+                gaps=gaps,
             )
             if patterns:
                 await asyncio.sleep(2)
@@ -85,6 +87,8 @@ class Orchestrator:
         return AnalysisReport(
             request=request,
             competitors=competitors,
+            user_ads=user_competitor.ads,
+            creative_dna=extract_creative_dna(user_competitor.ads + [ad for c in competitors for ad in c.ads]),
             patterns=patterns,
             gaps=gaps,
             generated_creatives=creatives,

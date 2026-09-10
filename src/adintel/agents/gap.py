@@ -31,6 +31,8 @@ For EACH winning pattern, decide:
 - Does the user's current ad set already use this pattern?
 - What specific recommendation would you make?
 - Priority 1-5 (1 = do this first, biggest lift).
+- Cite 1-3 supporting ad IDs from that pattern's ``Evidence IDs``. Do not
+  invent IDs and do not cite ads from another pattern.
 
 Output STRICT JSON:
 [
@@ -39,7 +41,9 @@ Output STRICT JSON:
     "pattern_description": "<verbatim description>",
     "user_has": true|false,
     "recommendation": "one specific, actionable sentence",
-    "priority": 1-5
+    "priority": 1-5,
+    "evidence_ad_ids": ["ad_id_1", "ad_id_2"],
+    "evidence_summary": "One plain-English sentence explaining what these ads demonstrate."
   }}
 ]
 
@@ -54,7 +58,9 @@ class GapAgent:
             return []
 
         patterns_block = "\n".join(
-            f"- [{p.category}] {p.description} (freq: {p.frequency_pct:.0f}%)" for p in patterns
+            f"- [{p.category}] {p.description} (freq: {p.frequency_pct:.0f}%; "
+            f"Evidence IDs: {', '.join(p.evidence_ad_ids) or 'none available'})"
+            for p in patterns
         )
         user_ads_block = self._format_user_ads(user_ads)
 
@@ -97,14 +103,65 @@ class GapAgent:
             )
             if not matched:
                 continue
+            evidence_ids = [
+                ad_id
+                for ad_id in row.get("evidence_ad_ids", [])
+                if ad_id in matched.evidence_ad_ids
+            ][:3] or matched.evidence_ad_ids[:3]
+            user_has = bool(row.get("user_has", False))
+            # The ranking is deterministic and intentionally simple: a
+            # frequent competitor pattern with multiple cited examples is a
+            # stronger opportunity, especially when the user lacks it.
+            evidence_confidence = min(1.0, len(evidence_ids) / 3)
+            opportunity_score = round(
+                matched.frequency_pct * (1.0 if not user_has else 0.35) * (0.6 + 0.4 * evidence_confidence),
+                1,
+            )
+            recommendation = row.get("recommendation", "").strip()
             gaps.append(
                 GapItem(
                     pattern=matched,
-                    user_has=bool(row.get("user_has", False)),
-                    recommendation=row.get("recommendation", "").strip(),
+                    user_has=user_has,
+                    recommendation=recommendation,
                     priority=int(row.get("priority", 3)),
+                    # A recommendation may only cite ads already attached to
+                    # its matched pattern. Fall back to the pattern evidence
+                    # when Gemini omits citations, so every useful gap has a
+                    # verifiable trail whenever the pattern does.
+                    evidence_ad_ids=evidence_ids,
+                    evidence_summary=row.get("evidence_summary", "").strip(),
+                    opportunity_score=opportunity_score,
+                    action_variants=GapAgent._action_variants(matched, recommendation),
                 )
             )
-        gaps.sort(key=lambda g: (g.user_has, g.priority))
+        gaps.sort(key=lambda g: (-g.opportunity_score, g.user_has, g.priority))
         logger.info(f"[GapAgent] produced {len(gaps)} gap items")
         return gaps
+
+    @staticmethod
+    def _action_variants(pattern: Pattern, recommendation: str) -> list[str]:
+        """Produce useful, reviewable creative directions without another LLM call."""
+        category = pattern.category.lower()
+        if category == "hook":
+            return [
+                "Problem-led hook: name the customer's frustration in the first line.",
+                "Question hook: turn the core customer pain point into a direct question.",
+                "Proof-led hook: lead with a specific customer result or review.",
+            ]
+        if category in {"social_proof", "testimonial"}:
+            return [
+                "UGC concept: put a customer quote beside the product in use.",
+                "Ratings concept: make a review score or short review the visual focal point.",
+                "Results concept: lead with a measurable customer outcome, then explain why.",
+            ]
+        if category in {"offer", "cta"}:
+            return [
+                "Offer-first concept: place the concrete value proposition in the opening frame.",
+                "Benefit-first concept: show the payoff before introducing the offer.",
+                "Urgency concept: pair the offer with a truthful, specific reason to act now.",
+            ]
+        return [
+            f"Direct execution: {recommendation}",
+            f"Customer-led execution: demonstrate {pattern.description.lower()}",
+            "Minimal execution: express the same idea with one focal visual and one clear CTA.",
+        ]

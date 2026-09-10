@@ -10,15 +10,18 @@ from adintel.models import (
     AnalysisRequest,
     Competitor,
     CreativeType,
+    CreativeDNA,
     GapItem,
     Pattern,
 )
 from adintel.report_dashboard import (
     competitor_chart_data,
+    competitive_scorecard,
     data_quality_summary,
     extract_headline,
     extract_strategy_name,
     gap_coverage_chart_data,
+    gap_evidence_cards,
     pattern_chart_data,
 )
 
@@ -38,14 +41,28 @@ def _make_report() -> AnalysisReport:
     ad1, ad2, ad3 = _make_ad("a1", "BMW"), _make_ad("a2", "BMW"), _make_ad("a3", "Audi")
     comp1 = Competitor(name="BMW", ads=[ad1, ad2])
     comp2 = Competitor(name="Audi", ads=[ad3])
-    pattern1 = Pattern(category="hook", description="d1", frequency_pct=42.0)
+    pattern1 = Pattern(category="hook", description="d1", frequency_pct=42.0, evidence_ad_ids=["a1", "missing"])
     pattern2 = Pattern(category="copy_length", description="d2", frequency_pct=12.0)
-    gap1 = GapItem(pattern=pattern1, user_has=False, recommendation="r1", priority=1)
+    gap1 = GapItem(
+        pattern=pattern1,
+        user_has=False,
+        recommendation="r1",
+        priority=1,
+        evidence_ad_ids=["a1", "missing"],
+        evidence_summary="BMW uses this opening repeatedly.",
+    )
     gap2 = GapItem(pattern=pattern2, user_has=True, recommendation="r2", priority=2)
     req = AnalysisRequest(user_brand="Acme", competitors=["BMW", "Audi"])
     return AnalysisReport(
         request=req,
         competitors=[comp1, comp2],
+        user_ads=[_make_ad("user-1", "Acme")],
+        creative_dna=[
+            CreativeDNA(ad_id="user-1", hook_type="benefit", creative_format="text", cta_strength=5, hook_strength=6, offer_clarity=3, visual_quality=5),
+            CreativeDNA(ad_id="a1", hook_type="question", creative_format="text", has_social_proof=True, cta_strength=8, hook_strength=8, offer_clarity=8, visual_quality=5),
+            CreativeDNA(ad_id="a2", hook_type="question", creative_format="text", has_social_proof=True, cta_strength=8, hook_strength=8, offer_clarity=8, visual_quality=5),
+            CreativeDNA(ad_id="a3", hook_type="question", creative_format="text", has_social_proof=True, cta_strength=8, hook_strength=8, offer_clarity=8, visual_quality=5),
+        ],
         patterns=[pattern1, pattern2],
         gaps=[gap1, gap2],
         executive_summary=(
@@ -139,3 +156,19 @@ def test_data_quality_summary_flags_fully_empty_report():
     dq = data_quality_summary(empty_report)
     assert dq["is_empty"] is True
     assert dq["zero_ad_brands"] == ["Tarzan"]
+
+
+def test_gap_evidence_cards_resolves_only_real_ad_ids():
+    cards = gap_evidence_cards(_make_report())
+    evidence = cards["d1"]
+    assert len(evidence) == 1
+    assert evidence[0]["id"] == "a1"
+    assert evidence[0]["brand"] == "BMW"
+
+
+def test_competitive_scorecard_compares_user_and_winner_creative_dna():
+    scorecard = competitive_scorecard(_make_report())
+    assert scorecard["has_comparison"] is True
+    assert scorecard["competitor_score"] > scorecard["user_score"]
+    social_proof = next(row for row in scorecard["rows"] if row["dimension"] == "Social proof")
+    assert social_proof["gap"] == -10.0

@@ -12,7 +12,7 @@ from pathlib import Path
 from loguru import logger
 
 from ..clients.gemini import generate_image, generate_text
-from ..models import GeneratedCreative, Pattern
+from ..models import GapItem, GeneratedCreative, Pattern
 
 COPY_SYSTEM = """You write direct-response ad copy that mimics proven winners
 while sounding fresh. Every element ties back to at least one winning pattern.
@@ -23,6 +23,9 @@ Category / industry: {industry}.
 
 You MUST reflect these winning patterns extracted from competitor ads:
 {patterns_block}
+
+Prioritized creative gaps to address (make each concept explicitly solve one):
+{gaps_block}
 
 For each concept, output STRICT JSON with:
 {{
@@ -51,12 +54,13 @@ class CreateAgent:
         brand: str,
         industry: str,
         patterns: list[Pattern],
+        gaps: list[GapItem] | None = None,
     ) -> list[GeneratedCreative]:
         if not patterns:
             logger.warning("[CreateAgent] no patterns; skipping creative generation")
             return []
 
-        concepts = await self._generate_concepts(brand, industry, patterns)
+        concepts = await self._generate_concepts(brand, industry, patterns, gaps or [])
         if not concepts:
             return []
 
@@ -79,7 +83,7 @@ class CreateAgent:
                     hook=concept["hook"],
                     body_copy=concept["body_copy"],
                     cta=concept["cta"],
-                    inspired_by=[p.description for p in patterns[:3]],
+                    inspired_by=[g.pattern.description for g in (gaps or [])[:3]] or [p.description for p in patterns[:3]],
                     rationale=concept.get("rationale", ""),
                 )
             )
@@ -87,14 +91,20 @@ class CreateAgent:
         return creatives
 
     async def _generate_concepts(
-        self, brand: str, industry: str, patterns: list[Pattern]
+        self, brand: str, industry: str, patterns: list[Pattern], gaps: list[GapItem]
     ) -> list[dict]:
         patterns_block = "\n".join(f"- [{p.category}] {p.description}" for p in patterns)
+        gaps_block = "\n".join(
+            f"- Opportunity {g.opportunity_score:.0f}/100: {g.recommendation}"
+            for g in gaps[:3]
+            if not g.user_has
+        ) or "(No specific gaps supplied; use the strongest winning patterns.)"
         prompt = COPY_PROMPT.format(
             n=self.n_creatives,
             brand=brand,
             industry=industry or "general consumer",
             patterns_block=patterns_block,
+            gaps_block=gaps_block,
         )
         raw = await generate_text(prompt, system=COPY_SYSTEM)
         cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
