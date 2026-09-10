@@ -28,14 +28,34 @@ BASE_BACKOFF_SECONDS = 15  # free tier = 5 RPM, so ~12s between calls is safe
 
 
 def _get_client() -> genai.Client:
+    """Return a cached genai.Client.
+
+    Auth priority:
+      1. GOOGLE_API_KEY set  → AI Studio (api_key auth)
+      2. GCP_PROJECT_ID set  → Vertex AI (Application Default Credentials)
+      3. Neither set         → raise with a clear message
+    """
     global _client
     if _client is None:
         settings = get_settings()
-        if not settings.google_api_key:
-            raise RuntimeError(
-                "GOOGLE_API_KEY is not set. Get one at https://aistudio.google.com/apikey"
+        if settings.google_api_key:
+            logger.info("[gemini] using AI Studio auth (GOOGLE_API_KEY)")
+            _client = genai.Client(api_key=settings.google_api_key)
+        elif settings.gcp_project_id:
+            logger.info(
+                f"[gemini] using Vertex AI auth (project={settings.gcp_project_id}, "
+                f"location={settings.gcp_location})"
             )
-        _client = genai.Client(api_key=settings.google_api_key)
+            _client = genai.Client(
+                vertexai=True,
+                project=settings.gcp_project_id,
+                location=settings.gcp_location,
+            )
+        else:
+            raise RuntimeError(
+                "No Gemini auth configured. Set GOOGLE_API_KEY (AI Studio) "
+                "or GCP_PROJECT_ID with Application Default Credentials (Vertex AI)."
+            )
     return _client
 
 

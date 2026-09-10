@@ -62,9 +62,11 @@ job well. The Orchestrator wires them into a sequential pipeline.
 
 ### 1. Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - [`uv`](https://docs.astral.sh/uv/) for dependency management
-- A **Google AI Studio** API key (free): https://aistudio.google.com/apikey
+- **Gemini auth — pick one:**
+  - **Option A (AI Studio):** free API key from https://aistudio.google.com/apikey — easiest to start, limited image quota.
+  - **Option B (Vertex AI, recommended):** a GCP project with Vertex AI API enabled and Application Default Credentials. Required for production image generation.
 - *(Optional)* A Meta App with `ads_read` scope for live competitor data.
   Without it the app runs in **stub mode** with realistic synthetic data.
 
@@ -74,17 +76,53 @@ job well. The Orchestrator wires them into a sequential pipeline.
 cd adintel
 uv sync --index-url https://pypi.ci.artifacts.walmart.com/artifactory/api/pypi/external-pypi/simple --allow-insecure-host pypi.ci.artifacts.walmart.com
 cp .env.example .env
-# then edit .env and paste your GOOGLE_API_KEY
 ```
 
-### 3. Run
+### 3. Configure auth
+
+**Option A — AI Studio API key:**
+```bash
+# In .env, set:
+GOOGLE_API_KEY=AIzaSy...
+```
+
+**Option B — Vertex AI (recommended for image generation):**
+```bash
+# In .env, set:
+GCP_PROJECT_ID=your-gcp-project-id
+GCP_LOCATION=us-central1          # adjust if your project is in another region
+# Leave GOOGLE_API_KEY blank.
+
+# Then authenticate locally:
+gcloud auth application-default login
+
+# Enable the Vertex AI API on your project (one-time):
+gcloud services enable aiplatform.googleapis.com
+```
+When `GOOGLE_API_KEY` is blank and `GCP_PROJECT_ID` is set, the app
+automatically routes all Gemini calls through Vertex AI using ADC.
+No extra flag or code change required.
+
+### 4. Run
 
 ```bash
 uv run uvicorn adintel.main:app --reload --port 8000
-# then open http://localhost:8000
+# open http://localhost:8000
 ```
 
-### 4. (Later) Switch to live Meta data
+### 5. Verify image generation is working
+
+After running an analysis, click **Generate AI Visual · Billable →** on any
+creative card. You will see a confirmation prompt before any API call is made.
+On success the card image is replaced with a Gemini-generated visual.
+
+To disable image generation entirely (e.g. cost-controlled environments):
+```bash
+# In .env:
+IMAGE_GENERATION_ENABLED=false
+```
+
+### 6. (Later) Switch to live Meta data
 
 Get a Meta access token with `ads_read` scope:
 1. Go to https://developers.facebook.com/apps and create an app
@@ -132,15 +170,16 @@ adintel/
 
 ## Google tech used
 
-| Layer                    | Service                                    |
-|--------------------------|--------------------------------------------|
-| LLM reasoning            | Gemini 2.5 Flash (long context)            |
-| Multimodal analysis      | Gemini 2.5 Flash (vision on ad creatives)  |
-| Image generation         | Gemini 2.5 Flash Image (Nano Banana)       |
-| Agent orchestration      | Custom sequential (ADK-swappable)          |
-| Serverless compute       | Cloud Run                                  |
-| State (optional)         | Firestore                                  |
-| Creative storage         | Firebase Storage                           |
+| Layer                    | Service                                           |
+|--------------------------|---------------------------------------------------|
+| LLM reasoning            | Gemini 2.5 Flash (long context)                   |
+| Multimodal analysis      | Gemini 2.5 Flash (vision on ad creatives)         |
+| Image generation         | Gemini 2.5 Flash Image via Vertex AI              |
+| Agent orchestration      | Google ADK SequentialAgent                        |
+| Serverless compute       | Cloud Run                                         |
+| Ad data                  | BigQuery                                          |
+| State (optional)         | Firestore                                         |
+| Creative storage         | Firebase Storage                                  |
 
 ---
 
