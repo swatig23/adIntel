@@ -28,14 +28,34 @@ BASE_BACKOFF_SECONDS = 15  # free tier = 5 RPM, so ~12s between calls is safe
 
 
 def _get_client() -> genai.Client:
+    """Return a cached genai.Client.
+
+    Auth priority:
+      1. GOOGLE_API_KEY set  → AI Studio (api_key auth)
+      2. GCP_PROJECT_ID set  → Vertex AI (Application Default Credentials)
+      3. Neither set         → raise with a clear message
+    """
     global _client
     if _client is None:
         settings = get_settings()
-        if not settings.google_api_key:
-            raise RuntimeError(
-                "GOOGLE_API_KEY is not set. Get one at https://aistudio.google.com/apikey"
+        if settings.google_api_key:
+            logger.info("[gemini] using AI Studio auth (GOOGLE_API_KEY)")
+            _client = genai.Client(api_key=settings.google_api_key)
+        elif settings.gcp_project_id:
+            logger.info(
+                f"[gemini] using Vertex AI auth (project={settings.gcp_project_id}, "
+                f"location={settings.gcp_location})"
             )
-        _client = genai.Client(api_key=settings.google_api_key)
+            _client = genai.Client(
+                vertexai=True,
+                project=settings.gcp_project_id,
+                location=settings.gcp_location,
+            )
+        else:
+            raise RuntimeError(
+                "No Gemini auth configured. Set GOOGLE_API_KEY (AI Studio) "
+                "or GCP_PROJECT_ID with Application Default Credentials (Vertex AI)."
+            )
     return _client
 
 
@@ -86,23 +106,13 @@ def _call_with_retry(call_fn, primary_model: str, label: str = "Gemini"):
     raise last_err or RuntimeError("All candidate Gemini models busy")
 
 
-async def generate_text(
-    prompt: str,
-    *,
-    system: Optional[str] = None,
-    json_mode: bool = False,
-) -> str:
+async def generate_text(prompt: str, *, system: Optional[str] = None) -> str:
     """One-shot text generation with Gemini."""
     settings = get_settings()
     client = _get_client()
 
     def _call(model_name: str) -> str:
-        mime_type = "application/json" if json_mode else None
-        cfg = genai_types.GenerateContentConfig(
-            system_instruction=system,
-            response_mime_type=mime_type,
-            automatic_function_calling=genai_types.AutomaticFunctionCallingConfig(disable=True),
-        )
+        cfg = genai_types.GenerateContentConfig(system_instruction=system) if system else None
         resp = client.models.generate_content(
             model=model_name,
             contents=prompt,
@@ -120,7 +130,6 @@ async def generate_from_multimodal(
     image_urls: list[str],
     *,
     system: Optional[str] = None,
-    json_mode: bool = False,
 ) -> str:
     """Text generation grounded in one or more image URLs."""
     import httpx
@@ -152,12 +161,7 @@ async def generate_from_multimodal(
         )
 
     def _call(model_name: str) -> str:
-        mime_type = "application/json" if json_mode else None
-        cfg = genai_types.GenerateContentConfig(
-            system_instruction=system,
-            response_mime_type=mime_type,
-            automatic_function_calling=genai_types.AutomaticFunctionCallingConfig(disable=True),
-        )
+        cfg = genai_types.GenerateContentConfig(system_instruction=system) if system else None
         resp = client.models.generate_content(
             model=model_name,
             contents=parts,
@@ -170,35 +174,47 @@ async def generate_from_multimodal(
     )
 
 
-async def generate_image(prompt: str, output_path: Path, timeout: float = 6.0) -> Path:
-    """Generate an image via Gemini Flash Image ('Nano Banana').
+async def generate_image(prompt: str, output_path: Path) -> Path:
+    """Generate an image exclusively via Vertex AI (gemini-2.5-flash-image).
 
+    Always creates a dedicated Vertex AI client — never uses the shared
+    _get_client() which may resolve to AI Studio (generativelanguage.googleapis.com).
+    All calls go to aiplatform.googleapis.com via Application Default Credentials.
+
+    Requires GCP_PROJECT_ID set in config and `gcloud auth application-default login`.
     Writes PNG bytes to ``output_path`` and returns the path.
-    Times out after ``timeout`` seconds if quota/network blocks.
     """
     settings = get_settings()
-    client = _get_client()
+    if not settings.gcp_project_id:
+        raise RuntimeError(
+            "GCP_PROJECT_ID is required for image generation. "
+            "Set it in .env and run: gcloud auth application-default login"
+        )
+
+    vertex_client = genai.Client(
+        vertexai=True,
+        project=settings.gcp_project_id,
+        location=settings.gcp_location,
+    )
 
     def _call() -> bytes:
-        resp = client.models.generate_content(
+        resp = vertex_client.models.generate_content(
             model=settings.gemini_image_model,
             contents=prompt,
         )
-        # Walk candidates → parts → inline_data.data (bytes)
         for cand in resp.candidates or []:
             for part in getattr(cand.content, "parts", []) or []:
                 inline = getattr(part, "inline_data", None)
                 if inline and inline.data:
                     return inline.data
-        raise RuntimeError("Gemini did not return any image bytes")
+        raise RuntimeError("Vertex AI did not return any image bytes")
 
-    # Image generation on free tier is limit 0; attempt once with timeout
-    try:
-        data = await asyncio.wait_for(asyncio.to_thread(_call), timeout=timeout)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_bytes(data)
-        logger.info(f"Wrote generated image → {output_path}")
-        return output_path
-    except Exception as e:
-        logger.warning(f"Image generation timed out or failed ({e}); fallback expected.")
-        raise
+    logger.info(
+        f"[generate_image] Vertex AI · project={settings.gcp_project_id} "
+        f"location={settings.gcp_location} model={settings.gemini_image_model}"
+    )
+    data = await asyncio.to_thread(_call)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(data)
+    logger.info(f"[generate_image] wrote → {output_path}")
+    return output_path

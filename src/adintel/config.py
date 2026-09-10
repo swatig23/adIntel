@@ -26,17 +26,30 @@ class Settings(BaseSettings):
     meta_access_token: str = ""
     use_meta_stub: bool = True
 
-    # Data source dispatcher — controls IngestAgent backend selection.
-    # Valid values: "meta_stub" | "bq_political" | "meta_live" | "bq_kaggle"
+    # Data source dispatcher -- controls IngestAgent backend selection.
+    # Valid values: "meta_stub" | "bq_political" | "meta_live" | "bq_kaggle" |
+    # "bq_kaggle_transcripts" | "curated_visual"
     data_source: str = "meta_stub"
+
+    # Local, permissioned visual corpus for a reliable product demo.
+    curated_visual_file: str = "demo_ads.json"
+    curated_visual_asset_dir: str = "demo_assets"
 
     # BigQuery tables (used when data_source is bq_*).
     bq_political_table: str = "bigquery-public-data.google_political_ads.creative_stats"
     bq_kaggle_table: str = ""
     bq_limit_per_brand: int = 50
 
+    # Set True when the configured data source has no ad delivery dates
+    # (e.g. bq_kaggle_transcripts -- a curated "one notable ad per brand"
+    # dataset with no start/stop timestamps). When True, LongevityAgent
+    # treats every fetched ad as a winner instead of filtering by
+    # days_running, since there's no time-based signal to filter on.
+    bq_skip_longevity_filter: bool = False
+
     # GCP / Firebase (optional in MVP)
     gcp_project_id: str = ""
+    gcp_location: str = "global"
     firestore_collection: str = "adintel_analyses"
     firebase_storage_bucket: str = ""
 
@@ -52,6 +65,14 @@ class Settings(BaseSettings):
     # ADK misbehaves during a live demo. Both paths run the identical six
     # agents and produce the same AnalysisReport shape.
     adk_enabled: bool = True
+
+    # On-demand Gemini image generation for the "Generate AI Visual" button
+    # on each creative card. Set IMAGE_GENERATION_ENABLED=false to prevent
+    # all on-demand image API calls -- useful when GOOGLE_API_KEY has no
+    # image quota or in cost-controlled environments. The UI shows a graceful
+    # disabled state; no silent fallback to a billable call will occur.
+    # The /analyze pipeline is NOT affected by this flag.
+    image_generation_enabled: bool = True
 
 
 @lru_cache(maxsize=1)

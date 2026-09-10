@@ -34,8 +34,9 @@ gcloud services enable run.googleapis.com artifactregistry.googleapis.com
 
 ### 2. Deploy directly from source (gcloud builds the container for you)
 No need to build/push Docker images by hand - `gcloud run deploy` with
-`--source` does it all in one command:
+`--source` does it all in one command.
 
+**Option A — AI Studio API key auth:**
 ```bash
 cd /path/to/adintel
 
@@ -43,15 +44,29 @@ gcloud run deploy adintel \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars "GOOGLE_API_KEY=YOUR_KEY_HERE,DATA_SOURCE=meta_stub,USE_META_STUB=true,GCP_PROJECT_ID=YOUR_PROJECT_ID"
+  --set-env-vars "GOOGLE_API_KEY=YOUR_AI_STUDIO_KEY,DATA_SOURCE=meta_stub,USE_META_STUB=true,GCP_PROJECT_ID=YOUR_PROJECT_ID,GCP_LOCATION=global"
 ```
+
+**Option B — Vertex AI auth (recommended; no API key needed):**
+```bash
+cd /path/to/adintel
+
+gcloud run deploy adintel \
+  --source . \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars "DATA_SOURCE=meta_stub,USE_META_STUB=true,GCP_PROJECT_ID=YOUR_PROJECT_ID,GCP_LOCATION=global,IMAGE_GENERATION_ENABLED=true"
+```
+With Option B, leave `GOOGLE_API_KEY` out of `--set-env-vars` entirely.
+The app automatically uses the Cloud Run service account's credentials
+for all Gemini and Vertex AI calls (see step 2b below for IAM setup).
 
 Notes:
 - `--allow-unauthenticated` = public URL, anyone with the link can open it
   (fine for a hackathon demo; judges need to click it without auth)
 - Start with `DATA_SOURCE=meta_stub` for the FIRST deploy - guarantees it
   works without depending on BigQuery auth inside the container. Switch
-  to `bq_political` in a second deploy once the basic version is proven live.
+  to `bq_kaggle_transcripts` in a second deploy once the basic version is proven live.
 - Takes 3-5 minutes the first time (builds container, pushes, deploys)
 - Output ends with a URL like `https://adintel-xxxxx-uc.a.run.app` - THAT
   is your submission link
@@ -75,23 +90,26 @@ exactly like your localhost test.
 
 ---
 
-## If BigQuery auth fails inside the deployed container
+## Step 2b: Grant the Cloud Run service account the right IAM roles
 
-Cloud Run containers don't automatically have your local
-`gcloud auth application-default login` credentials. Two options:
+Cloud Run containers don't use your local `gcloud auth application-default login`
+credentials. They run as a GCP service account. For Vertex AI and BigQuery to
+work inside the deployed container, grant that service account the correct roles.
 
-**Option A (fastest): stay on meta_stub for the live demo**
-Just don't set `DATA_SOURCE=bq_political` in the deployed environment
-variables. Ship with synthetic data live, mention in your demo video
-that BigQuery integration is proven locally and code-complete (it is -
-see STATUS.md). This is a perfectly valid scope cut under time pressure.
-
-**Option B: grant the Cloud Run service account BigQuery access**
 ```bash
-# Find the default compute service account:
+# Find the default compute service account (used by Cloud Run unless you
+# created a custom one):
 gcloud iam service-accounts list
+# It looks like: 123456789-compute@developer.gserviceaccount.com
 
-# Grant it BigQuery Data Viewer + Job User roles:
+# Replace YOUR_PROJECT_ID and YOUR_PROJECT_NUMBER below:
+
+# Vertex AI (required for on-demand image generation):
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+  --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/aiplatform.user"
+
+# BigQuery (required for DATA_SOURCE=bq_* modes):
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
   --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
   --role="roles/bigquery.dataViewer"
@@ -100,10 +118,10 @@ gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
   --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
   --role="roles/bigquery.jobUser"
 ```
-Then redeploy with `DATA_SOURCE=bq_political` in env vars.
 
-Do Option A first. Do Option B only if you have time left after a
-working live demo exists.
+If you want to skip IAM setup for the first deploy, use `DATA_SOURCE=meta_stub`
+and `IMAGE_GENERATION_ENABLED=false` — that gets you a working live demo without
+needing any service account roles. Add roles and redeploy once the baseline works.
 
 ---
 

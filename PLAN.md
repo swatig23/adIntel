@@ -1,5 +1,41 @@
 # AdIntel - Plan of Attack
 
+> **UPDATE (2026-09-11):** Since the note below, a follow-on commit
+> (`776b5cf "refactor 2"`) landed three more features on top of the
+> stabilization pass -- see `STATUS.md` "Feature additions" section:
+> evidence-backed gap recommendations with real supporting-ad citations,
+> a deterministic Creative DNA comparison scorecard, and a `curated_visual`
+> data source for a reliable no-network demo fallback. That same commit
+> also accidentally committed unresolved git merge-conflict markers into
+> `.env.example`, which has since been fixed. Tests are now at 37 passed
+> (up from 31).
+>
+> **UPDATE (2026-09-05):** The morning-kickoff steps below (get API key,
+> create BQ sandbox project, set up `.env`) are now **DONE** and
+> superseded by the 2026-09-05 stabilization pass -- see `STATUS.md`
+> "Stabilization pass" section for the full list of what changed. The app
+> now runs on the NEW billed GCP project `project-47457978-49f4-4e71-9a0`
+> (migrated off the old `gen-lang-client-0516852331`), the ADK path is
+> wired in and is the default (`ADK_ENABLED=true`), Nano Banana UI wording
+> is accurate, and the landing page has been redesigned. Kept the original
+> kickoff steps below for historical reference / in case `.env` ever needs
+> rebuilding from scratch on a new machine.
+>
+> **What's still open, ranked by priority:**
+> 1. Drop a real `GOOGLE_API_KEY` into `.env` on the actual demo
+>    machine/network and re-run the full BMW/Audi/AutoZone smoke test --
+>    Gemini-dependent stages were not live-verified in the stabilization
+>    sandbox (no key available there).
+> 2. Verify live BigQuery row-level query access to the new project from
+>    an approved network -- the stabilization sandbox hit a VPC Service
+>    Controls org policy block; the config itself is confirmed correct.
+>    If it stays blocked, `DATA_SOURCE=curated_visual` is a ready fallback.
+> 3. If using the curated_visual fallback, populate `demo_ads.json` /
+>    `demo_assets/` with real, permissioned competitor ads -- currently
+>    near-empty scaffolding.
+> 4. Everything in "Afternoon" / "Evening" sections below (second
+>    scenario test, demo video, Devpost submission) is still pending.
+
 > **CORRECTED TIMELINE (2026-09-03):** The "8 PM today" deadline below was
 > based on an incorrect assumption, not the actual program schedule.
 > Official Google Patchamomma 2026 timeline (confirmed via program email):
@@ -68,18 +104,26 @@ If `gcloud` is NOT installed, either:
 - Enable Firestore in Native mode, pick a location (asia-south1 = Mumbai)
 - Spark plan (free) is selected by default — do not upgrade
 
-### 5. Create `.env` (2 min)
+### 5. Create `.env` (2 min) -- DONE as of 2026-09-05, kept for reference
 ```bash
 cd /Users/s0g09hc/Documents/swati/adintel
 cp .env.example .env
 ```
 Edit `.env` and set:
 ```
-GOOGLE_API_KEY=AIza...                # from step 1
-GCP_PROJECT_ID=your-sandbox-project    # from step 2 (leave blank if you skipped)
-DATA_SOURCE=bq_political               # if you completed step 3, else meta_stub
-USE_META_STUB=true                     # unrelated to DATA_SOURCE, keep true
+GOOGLE_API_KEY=AIza...                              # from step 1 -- STILL NEEDED, not set on any machine as of 2026-09-05
+GCP_PROJECT_ID=project-47457978-49f4-4e71-9a0       # the new billed project (migrated 2026-09-05)
+BQ_KAGGLE_TABLE=project-47457978-49f4-4e71-9a0:commercial_ads.ad_transcripts
+DATA_SOURCE=bq_kaggle_transcripts                   # the Kaggle transcripts dataset now lives in the new project
+BQ_SKIP_LONGEVITY_FILTER=true                       # this dataset has no delivery-date columns
+USE_META_STUB=true                                  # unrelated to DATA_SOURCE, keep true
+ADK_ENABLED=true                                    # ADK is now the default orchestration backend
 ```
+
+> A 6th `DATA_SOURCE=curated_visual` option now also exists for a reliable,
+> no-network demo path using a local JSON corpus + local image assets --
+> see `DEMO_DATASET.md`. Use it as a fallback if live BigQuery access is
+> still blocked on demo day (see "What's still open" item 2 above).
 
 ### 6. Install the new BigQuery dep on VPN (2 min)
 ```bash
@@ -92,7 +136,7 @@ client won't import. Get on VPN before booting the app.
 ### 7. Verify tests still green (2 min)
 ```bash
 .venv/bin/python -m pytest tests/ -v
-# should show 9 passed
+# should show 37 passed (as of the 2026-09-11 feature additions)
 ```
 
 ### 7.5. Test Gemini connectivity in isolation (2 min)
@@ -111,20 +155,22 @@ since this runs entirely against your personal network + public Gemini API.
 .venv/bin/python -m uvicorn adintel.main:app --reload --port 8000
 # open http://localhost:8000 in browser
 # check http://localhost:8000/healthz — should show:
-#   "data_source":"bq_political" (or "meta_stub" if you skipped BQ)
-#   "google_api_key_set":true
-#   "gcp_project_id_set":true (if you completed step 2)
+#   "data_source":"bq_kaggle_transcripts" (or "meta_stub" if you skipped BQ)
+#   "google_api_key_set":true          <- still needs a real key as of 2026-09-05
+#   "gcp_project_id_set":true          <- project-47457978-49f4-4e71-9a0
+#   "orchestration_backend":"adk"      <- ADK is the default now (Afternoon section, "Wire the ADK path")
 #   "storage_backend":"FirestoreStore" or "LocalJsonStore"
 ```
 
 ### 9. Smoke test the full pipeline (5 min)
-- With `DATA_SOURCE=bq_political`: try Brand = `Sierra Club`,
-  Competitors = `NRDC, League of Conservation Voters, Environmental Defense Fund`
+- With `DATA_SOURCE=bq_kaggle_transcripts` (the current default): try Brand =
+  `BMW`, Competitors = `Audi, AutoZone` -- these are known-present brands in
+  the transcripts dataset.
 - With `DATA_SOURCE=meta_stub`: try Brand = `Warby Parker`,
   Competitors = `Ray-Ban, Zenni Optical`
 - Click "Analyze competitors"
 - Wait 30-60 seconds
-- Report should render with real (or synthetic) ads, patterns, gaps, and 3 generated ad images
+- Report should render with real (or synthetic) ads, patterns, gaps, and 3 generated ad images (or PIL fallback cards if image quota is 0 -- both are acceptable, see STATUS.md)
 - If ANY error appears, copy the terminal traceback into chat
 
 ---
@@ -146,23 +192,15 @@ stub mode (uses picsum.photos - should work), (c) rate limits.
 
 ## Afternoon (YOU, ~1 hour)
 
-### 7. Wire the ADK path into FastAPI (optional, high value for judges)
+### 7. Wire the ADK path into FastAPI -- DONE (see STATUS.md "Orchestration" section)
 
-Currently `main.py` uses `Orchestrator` (functional). To flip to ADK:
-
-In `src/adintel/main.py`:
-```python
-# Add at top with other imports
-from .agents.adk_pipeline import run_via_adk
-
-# In the analyze() endpoint, replace:
-report = await orchestrator.run(req)
-# with:
-report = await run_via_adk(req, creative_output_dir=CREATIVE_DIR)
-```
-
-Then reload and re-run the smoke test. If it works, keep. If it breaks,
-revert (functional orchestrator is fine).
+`main.py` now routes through `run_via_adk` by default (`ADK_ENABLED=true` in
+`.env`), with the functional `Orchestrator` kept as an instant fallback if
+ADK misbehaves mid-demo (`ADK_ENABLED=false`). Confirmed via
+`/healthz` -> `"orchestration_backend":"adk"`. Still needs a live run with a
+real `GOOGLE_API_KEY` to confirm the Gemini-calling stages produce real
+output through the ADK path specifically (see STATUS.md TODO under
+Orchestration).
 
 ### 8. Try a second scenario (10 min)
 Test with a different vertical - say `Notion` vs `Coda, Airtable, Obsidian`
@@ -185,7 +223,7 @@ Test with a different vertical - say `Notion` vs `Coda, Airtable, Obsidian`
 - **0:20-0:40** Show landing form, type competitor names
 - **0:40-1:20** Watch report load. Highlight: "Gemini 2.5 analyzed 22 winning ads in one long-context call"
 - **1:20-2:10** Walk through 2-3 specific patterns and gaps. Read one aloud with specific numbers
-- **2:10-2:50** Scroll to Nano-Banana-generated creatives. "Generated in 20 seconds, informed by patterns"
+- **2:10-2:50** Scroll to the fresh ad creatives. "Generated in 20 seconds, informed by patterns" -- if live Gemini image gen is quota-limited on demo day, say so plainly and show the styled fallback concept cards instead; do not claim Nano Banana generated them if it didn't.
 - **2:50-3:00** Close: "Multi-agent architecture built on ADK. `$99/mo` competitors don't do this. Live demo at localhost."
 
 Tools: QuickTime screen recorder (built-in macOS: `Cmd+Shift+5`).
@@ -206,10 +244,10 @@ Things will take longer than planned. Reserve 15 min for last-mile issues.
 Ranked by judge-impact for post-8PM work:
 
 ### High-impact enhancements
-1. **Wire ADK pipeline into FastAPI** (step 7 above) - 20 min
+1. ~~Wire ADK pipeline into FastAPI~~ -- DONE (2026-09-05 stabilization pass)
 2. **Deploy to Cloud Run with live URL** - 1-2 hrs; use `launchpad` sub-agent or `gcloud run deploy`
-3. **Add BigQuery for ad history** - 2-3 hrs; enables trend/longitudinal features
-4. **Add MCP Toolbox for BQ** - 2 hrs on top of #3; lets agents query BQ via tool-calls (huge judge point)
+3. **Add BigQuery for ad history** - largely done via the Kaggle transcripts table migration; remaining work is trend/longitudinal features on top of it
+4. **Add MCP Toolbox for BQ** - 2 hrs; lets agents query BQ via tool-calls (huge judge point)
 
 ### Medium-impact enhancements
 5. **Firebase Storage for creatives** - 45 min; gives shareable public URLs vs local files
@@ -231,8 +269,12 @@ Ranked by judge-impact for post-8PM work:
 
 1. If Gemini calls fail catastrophically -> ship with LOCAL-ONLY stub-Gemini
    responses baked into the code so demo video shows report structure
-2. If Nano Banana quota exhausted -> generate 3 static placeholder images
-   from a hardcoded prompt library, still show them as "generated"
+2. Nano Banana quota IS exhausted on the free tier (confirmed 0 quota,
+   this is not hypothetical) -> `CreateAgent` already auto-generates 3
+   styled PIL fallback concept cards (`_draw_fallback_card`) when live
+   image gen fails. This is DONE and working -- just be honest about it
+   in the UI/demo (see 2026-09-05 stabilization pass): never claim Nano
+   Banana generated an image it didn't.
 3. If UI polish takes too long -> submit with the functional-orchestrator
    backend + minimal HTMX, skip history/report-view routes
 4. If time is critically short -> submit README + code repo + 60-sec video
@@ -245,7 +287,10 @@ Ranked by judge-impact for post-8PM work:
 
 ## Ping me (chat) when
 
-- Kickoff step 5 succeeds -> we celebrate and move to afternoon polish
-- Kickoff step 5 fails -> paste terminal traceback, I fix
-- ADK wiring (step 7) done -> confirm judges will see `google.adk` usage
+- A real `GOOGLE_API_KEY` is in `.env` on the demo machine -> re-run the
+  BMW/Audi/AutoZone smoke test end-to-end and paste the output
+- Live BigQuery access is confirmed from an approved network (no more VPC
+  Service Controls block) -> paste the query result
+- Kickoff step 9 smoke test succeeds -> we celebrate and move to afternoon polish
+- Kickoff step 9 smoke test fails -> paste terminal traceback, I fix
 - Ready for demo video review -> I can spot-check the script
