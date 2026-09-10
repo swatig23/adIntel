@@ -138,11 +138,11 @@
   <section class="max-w-3xl pt-16 md:pt-24 pb-16 md:pb-24">
     <p class="eyebrow text-[var(--violet)] mb-5">Competitor Ad Intelligence</p>
     <h1 class="display text-4xl md:text-6xl font-extrabold leading-[1.08] tracking-tight mb-7">
-      Your competitors already tested the creative.<br class="hidden md:block" />
-      AdIntel tells you what worked.
+      See how competitors communicate.<br class="hidden md:block" />
+      Find the patterns. Create what comes next.
     </h1>
     <p class="text-lg md:text-xl text-[var(--ink-soft)] leading-relaxed mb-10 max-w-2xl">
-      Analyze real competitor ads, uncover repeatable creative patterns, identify
+      Analyze competitor reference ads, uncover recurring creative patterns, identify
       strategic gaps, and turn those insights into fresh ad concepts.
     </p>
     <a href="#analysis-form" class="submit-btn inline-flex items-center gap-2 px-6 py-3.5 rounded-lg font-bold">
@@ -169,7 +169,7 @@
           <span class="step-num text-2xl font-extrabold">02</span>
           <h3 class="display font-bold text-xl">Decode</h3>
         </div>
-        <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Gemini extracts the creative patterns behind real competitor ads.</p>
+        <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Gemini extracts recurring creative patterns from competitor reference ads.</p>
       </div>
       <div class="step-divider md:pl-10">
         <div class="flex items-baseline gap-3 mb-2">
@@ -191,7 +191,7 @@
       </div>
       <div class="metric-divider text-center md:text-left px-2">
         <div class="display text-3xl font-extrabold">{{ metrics.patterns }}</div>
-        <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Winning patterns</div>
+        <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Creative patterns</div>
       </div>
       <div class="metric-divider text-center md:text-left px-2">
         <div class="display text-3xl font-extrabold">{{ metrics.gaps }}</div>
@@ -262,7 +262,7 @@
                   />
                   <p class="text-xs text-[var(--ink-soft)] mt-1.5">
                     {% if data_source == "bq_kaggle_transcripts" %}
-                    Works best with well-known consumer brands already in our dataset (e.g. BMW, Audi, AutoZone, 7up).
+                    Works best with brands already represented in our dataset (e.g. Ford, Honda, Toyota, L'Oreal, Maybelline).
                     {% else %}
                     Any brand name works in demo mode.
                     {% endif %}
@@ -351,7 +351,7 @@
               </div>
               <div class="flex items-center gap-2 stage" data-stage="2">
                 <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-                <span class="stage-label text-[var(--ink-soft)]">Flagging reference ads</span>
+                <span class="stage-label text-[var(--ink-soft)]">Preparing reference ads</span>
               </div>
               <div class="flex items-center gap-2 stage" data-stage="3">
                 <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
@@ -363,7 +363,7 @@
               </div>
               <div class="flex items-center gap-2 stage" data-stage="5">
                 <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
-                <span class="stage-label text-[var(--ink-soft)]">Generating creatives</span>
+                <span class="stage-label text-[var(--ink-soft)]">Developing fresh concepts</span>
               </div>
               <div class="flex items-center gap-2 stage" data-stage="6">
                 <span class="stage-dot w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></span>
@@ -384,7 +384,7 @@
   <!-- 6. SMALL GOOGLE STACK FOOTER -->
   <footer class="py-10 mt-6 border-t border-[var(--line)] text-center">
     <p class="text-xs text-[var(--ink-soft)] tracking-wide">
-      Built with Google ADK &middot; Gemini &middot; Vertex AI &middot; BigQuery &middot; Firebase &middot; Cloud Run
+      Built with Google ADK &middot; Gemini &middot; Vertex AI &middot; BigQuery &middot; Cloud Firestore &middot; Cloud Run
     </p>
   </footer>
 
