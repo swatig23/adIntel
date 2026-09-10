@@ -7,7 +7,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 
 # Copy dependency manifests first for better layer caching
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-dev
 
 # Copy application code
