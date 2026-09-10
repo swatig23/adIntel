@@ -14,9 +14,9 @@
       --bg: #faf7f0;
       --ink: #1c1a17;
       --ink-soft: #57534a;
+      --line: #e4ddc9;
       --violet: #7a2e2e;
       --violet-dark: #5f2323;
-      --fuchsia: #b5533c;
       --amber: #b8860b;
     }
     body {
@@ -26,13 +26,23 @@
     }
     .display { font-family: 'Playfair Display', Georgia, serif; }
 
-    .card { background: #fff; border-radius: 0.75rem; border: 1px solid #e4ddc9; }
-    .card-shadow { box-shadow: 0 2px 12px rgba(28, 26, 23, 0.05); }
+    .eyebrow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    /* Restrained surfaces: thin border does most of the work, shadow is
+       nearly imperceptible -- reserved for the one truly interactive
+       surface (the form card), not sprinkled across every block. */
+    .card { background: #fff; border-radius: 0.5rem; border: 1px solid var(--line); }
+    .card-shadow { box-shadow: 0 1px 3px rgba(28, 26, 23, 0.04); }
 
     .field-input {
       background: #f1ece0;
-      border: 2px solid transparent;
-      border-radius: 0.5rem;
+      border: 1.5px solid transparent;
+      border-radius: 0.4rem;
       padding: 0.65rem 0.9rem;
       transition: border-color 0.15s ease;
       color: var(--ink);
@@ -45,13 +55,13 @@
     .submit-btn {
       background: var(--violet);
       color: #fff;
-      box-shadow: 0 4px 14px rgba(122, 46, 46, 0.3);
+      box-shadow: 0 1px 2px rgba(28, 26, 23, 0.12);
       transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
     }
-    .submit-btn:hover { background: var(--violet-dark); }
+    .submit-btn:hover { background: var(--violet-dark); box-shadow: 0 2px 8px rgba(95, 35, 35, 0.25); }
     .submit-btn:active {
-      transform: scale(0.97) translateY(1px);
-      box-shadow: 0 2px 8px rgba(122, 46, 46, 0.4);
+      transform: scale(0.98) translateY(1px);
+      box-shadow: 0 1px 3px rgba(95, 35, 35, 0.3);
     }
     .htmx-request .submit-btn,
     .submit-btn.htmx-request {
@@ -94,34 +104,42 @@
     .step-num {
       font-family: 'Playfair Display', Georgia, serif;
       color: var(--violet);
-      opacity: 0.35;
+      opacity: 0.3;
     }
+
+    /* Hairline dividers between the three product-story steps on desktop --
+       replaces a card grid with something closer to an editorial layout. */
+    .step-divider { border-left: 1px solid var(--line); }
+
+    .metric-divider + .metric-divider { border-left: 1px solid var(--line); }
   </style>
 </head>
 <body class="min-h-screen">
 
-<div class="max-w-7xl mx-auto px-6 md:px-10 py-6">
+<div class="max-w-6xl mx-auto px-6 md:px-10">
 
-  <!-- 1. HEADER -->
-  <header class="flex items-center justify-between mb-10 md:mb-16">
-    <h1 class="display text-2xl font-extrabold">AdIntel<span class="text-[var(--violet)]">.</span></h1>
-    <span class="text-[11px] px-2.5 py-1 rounded-full font-semibold tracking-wide
+  <!-- 1. COMPACT HEADER -->
+  <header class="flex items-center justify-between py-6 border-b border-[var(--line)]">
+    <span class="display text-xl font-extrabold tracking-tight">AdIntel<span class="text-[var(--violet)]">.</span></span>
+    <span class="eyebrow inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
       {% if using_stub %}bg-amber-100 text-amber-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">
+      <span class="w-1.5 h-1.5 rounded-full {% if using_stub %}bg-amber-600{% else %}bg-emerald-600{% endif %}"></span>
       {{ status_label }}
     </span>
   </header>
 
   <!-- 2. HERO -->
-  <section class="max-w-3xl mb-16 md:mb-20">
-    <h2 class="display text-4xl md:text-5xl font-extrabold leading-tight mb-5">
+  <section class="max-w-3xl pt-16 md:pt-24 pb-16 md:pb-24">
+    <p class="eyebrow text-[var(--violet)] mb-5">Competitor Ad Intelligence</p>
+    <h1 class="display text-4xl md:text-6xl font-extrabold leading-[1.08] tracking-tight mb-7">
       Your competitors already tested the creative.<br class="hidden md:block" />
       AdIntel tells you what worked.
-    </h2>
-    <p class="text-lg text-[var(--ink-soft)] leading-relaxed mb-8 max-w-2xl">
+    </h1>
+    <p class="text-lg md:text-xl text-[var(--ink-soft)] leading-relaxed mb-10 max-w-2xl">
       Analyze proven competitor ads, uncover repeatable creative patterns, identify
       strategic gaps, and turn those insights into fresh ad concepts.
     </p>
-    <a href="#analysis-form" class="submit-btn inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold">
+    <a href="#analysis-form" class="submit-btn inline-flex items-center gap-2 px-6 py-3.5 rounded-lg font-bold">
       Start an Analysis
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
@@ -129,54 +147,66 @@
     </a>
   </section>
 
-  <!-- 3. THREE-STEP VALUE PROPOSITION -->
-  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 md:mb-20">
-    <div class="card card-shadow p-6">
-      <div class="step-num text-4xl font-extrabold mb-2">01</div>
-      <h3 class="display font-bold text-lg mb-1.5">Discover</h3>
-      <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Pull competitor ads from BigQuery.</p>
-    </div>
-    <div class="card card-shadow p-6">
-      <div class="step-num text-4xl font-extrabold mb-2">02</div>
-      <h3 class="display font-bold text-lg mb-1.5">Decode</h3>
-      <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Gemini extracts the creative patterns behind proven ads.</p>
-    </div>
-    <div class="card card-shadow p-6">
-      <div class="step-num text-4xl font-extrabold mb-2">03</div>
-      <h3 class="display font-bold text-lg mb-1.5">Create</h3>
-      <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Turn strategic gaps into fresh ad concepts.</p>
+  <!-- 3. THREE-STEP PRODUCT STORY -- editorial, dividers not cards -->
+  <section class="py-14 md:py-16 border-t border-[var(--line)]">
+    <p class="eyebrow text-[var(--ink-soft)] mb-8">How it works</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0">
+      <div class="md:pr-10">
+        <div class="flex items-baseline gap-3 mb-2">
+          <span class="step-num text-2xl font-extrabold">01</span>
+          <h3 class="display font-bold text-xl">Discover</h3>
+        </div>
+        <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Pull competitor ads from BigQuery.</p>
+      </div>
+      <div class="step-divider md:px-10">
+        <div class="flex items-baseline gap-3 mb-2">
+          <span class="step-num text-2xl font-extrabold">02</span>
+          <h3 class="display font-bold text-xl">Decode</h3>
+        </div>
+        <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Gemini extracts the creative patterns behind proven ads.</p>
+      </div>
+      <div class="step-divider md:pl-10">
+        <div class="flex items-baseline gap-3 mb-2">
+          <span class="step-num text-2xl font-extrabold">03</span>
+          <h3 class="display font-bold text-xl">Create</h3>
+        </div>
+        <p class="text-sm text-[var(--ink-soft)] leading-relaxed">Turn strategic gaps into fresh ad concepts.</p>
+      </div>
     </div>
   </section>
 
-  <!-- 4. PRODUCT OUTCOME / METRICS STRIP -->
-  <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 md:mb-20">
-    <div class="card card-shadow p-5 text-center">
-      <div class="display text-3xl font-extrabold">{{ metrics.ads if metrics else "--" }}</div>
-      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium uppercase tracking-wide">Proven ads</div>
-    </div>
-    <div class="card card-shadow p-5 text-center">
-      <div class="display text-3xl font-extrabold">{{ metrics.patterns if metrics else "--" }}</div>
-      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium uppercase tracking-wide">Winning patterns</div>
-    </div>
-    <div class="card card-shadow p-5 text-center">
-      <div class="display text-3xl font-extrabold">{{ metrics.gaps if metrics else "--" }}</div>
-      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium uppercase tracking-wide">Strategic gaps</div>
-    </div>
-    <div class="card card-shadow p-5 text-center">
-      <div class="display text-3xl font-extrabold">{{ metrics.creatives if metrics else "--" }}</div>
-      <div class="text-xs text-[var(--ink-soft)] mt-1 font-medium uppercase tracking-wide">Fresh creatives</div>
+  <!-- 4. METRICS STRIP -->
+  <section class="py-10 border-t border-[var(--line)]">
+    <div class="grid grid-cols-2 md:grid-cols-4">
+      <div class="metric-divider text-center md:text-left px-2">
+        <div class="display text-3xl font-extrabold">{{ metrics.ads if metrics else "--" }}</div>
+        <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Proven ads</div>
+      </div>
+      <div class="metric-divider text-center md:text-left px-2">
+        <div class="display text-3xl font-extrabold">{{ metrics.patterns if metrics else "--" }}</div>
+        <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Winning patterns</div>
+      </div>
+      <div class="metric-divider text-center md:text-left px-2">
+        <div class="display text-3xl font-extrabold">{{ metrics.gaps if metrics else "--" }}</div>
+        <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Strategic gaps</div>
+      </div>
+      <div class="metric-divider text-center md:text-left px-2">
+        <div class="display text-3xl font-extrabold">{{ metrics.creatives if metrics else "--" }}</div>
+        <div class="eyebrow text-[var(--ink-soft)] mt-1.5">Fresh creatives</div>
+      </div>
     </div>
   </section>
 
   <!-- 5. ANALYSIS FORM -->
-  <section id="analysis-form" class="mb-14 scroll-mt-6">
-    <h2 class="display text-2xl md:text-3xl font-extrabold mb-6 text-center">Start your analysis</h2>
+  <section id="analysis-form" class="py-16 md:py-20 border-t border-[var(--line)] scroll-mt-6">
+    <p class="eyebrow text-[var(--violet)] mb-3 text-center">Get started</p>
+    <h2 class="display text-3xl md:text-4xl font-extrabold mb-10 text-center tracking-tight">Start your analysis</h2>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
       <!-- Left: form + progress, sticky sidebar on large screens -->
       <div class="lg:col-span-5 lg:col-start-2">
-        <div class="card card-shadow p-6 lg:sticky lg:top-6">
+        <div class="card card-shadow p-7 lg:sticky lg:top-6">
           <form
             hx-post="/analyze"
             hx-target="#report"
@@ -186,7 +216,7 @@
           >
             <div class="space-y-5">
               <div>
-                <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">Your Brand</label>
+                <label class="eyebrow block text-[var(--ink-soft)] mb-2">Your Brand</label>
                 <input
                   name="user_brand"
                   required
@@ -196,8 +226,8 @@
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">
-                  Competitors <span class="font-normal">(comma-separated, up to 10)</span>
+                <label class="eyebrow block text-[var(--ink-soft)] mb-2">
+                  Competitors <span class="font-normal normal-case tracking-normal">(comma-separated, up to 10)</span>
                 </label>
                 <input
                   name="competitors"
@@ -215,8 +245,8 @@
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-[var(--ink-soft)] mb-1.5">
-                  Industry hint <span class="font-normal">(optional)</span>
+                <label class="eyebrow block text-[var(--ink-soft)] mb-2">
+                  Industry hint <span class="font-normal normal-case tracking-normal">(optional)</span>
                 </label>
                 <input
                   name="industry_hint"
@@ -233,7 +263,7 @@
               <button
                 id="submit-btn"
                 type="submit"
-                class="submit-btn w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2"
+                class="submit-btn w-full py-3.5 rounded-lg font-bold flex items-center justify-center gap-2"
               >
                 <span class="btn-idle items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,7 +283,7 @@
           </form>
 
           <!-- Fun animated progress overlay, shown only while HTMX request is in flight -->
-          <div id="progress-overlay" class="mt-6 pt-6 border-t border-[var(--bg)]">
+          <div id="progress-overlay" class="mt-6 pt-6 border-t border-[var(--line)]">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 rounded-full bg-[#f1e4e0] flex items-center justify-center animate-pulse flex-shrink-0">
                 <svg class="w-4 h-4 text-[var(--violet)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,7 +297,7 @@
             </div>
 
             <div class="h-2 bg-[var(--bg)] rounded-full overflow-hidden mb-5">
-              <div class="progress-fill h-full rounded-full bg-gradient-to-r from-[var(--violet)] to-[var(--fuchsia)]" style="width: 6%;"></div>
+              <div class="progress-fill h-full rounded-full bg-[var(--violet)]" style="width: 6%;"></div>
             </div>
 
             <div class="space-y-2.5 text-sm">
@@ -309,8 +339,8 @@
   </section>
 
   <!-- 6. SMALL GOOGLE STACK FOOTER -->
-  <footer class="mt-14 text-center">
-    <p class="text-xs text-[var(--ink-soft)]">
+  <footer class="py-10 mt-6 border-t border-[var(--line)] text-center">
+    <p class="text-xs text-[var(--ink-soft)] tracking-wide">
       Built with Google ADK &middot; Gemini &middot; BigQuery &middot; Cloud Run
     </p>
   </footer>
