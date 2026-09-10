@@ -75,9 +75,9 @@
     .htmx-request .btn-loading { display: flex; }
 
     /* HTMX adds the class directly to whatever hx-indicator points at --
-       must target #progress-overlay itself, not a sibling combinator. */
-    #progress-overlay { display: none; }
-    #progress-overlay.htmx-request {
+       must target #progress-panel itself, not a sibling combinator. */
+    #progress-panel { display: none; }
+    #progress-panel.htmx-request {
       display: block;
     }
 
@@ -199,91 +199,111 @@
 
   <!-- 5. ANALYSIS FORM -->
   <section id="analysis-form" class="py-16 md:py-20 border-t border-[var(--line)] scroll-mt-6">
-    <p class="eyebrow text-[var(--violet)] mb-3 text-center">Get started</p>
-    <h2 class="display text-3xl md:text-4xl font-extrabold mb-10 text-center tracking-tight">Start your analysis</h2>
+    <div class="max-w-[1100px] mx-auto">
+      <p class="eyebrow text-[var(--violet)] mb-3 text-center">Get started</p>
+      <h2 class="display text-3xl md:text-4xl font-extrabold mb-10 text-center tracking-tight">Start your analysis</h2>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-14">
 
-      <!-- Left: form + progress, sticky sidebar on large screens -->
-      <div class="lg:col-span-5 lg:col-start-2">
-        <div class="card card-shadow p-7 lg:sticky lg:top-6">
-          <form
-            hx-post="/analyze"
-            hx-target="#report"
-            hx-swap="innerHTML"
-            hx-indicator="#progress-overlay"
-            hx-disabled-elt="#submit-btn"
-          >
-            <div class="space-y-5">
-              <div>
-                <label class="eyebrow block text-[var(--ink-soft)] mb-2">Your Brand</label>
-                <input
-                  name="user_brand"
-                  required
-                  placeholder="e.g., BMW"
-                  class="field-input w-full"
-                />
-              </div>
+        <!-- Left: analysis input, ~45% on desktop -->
+        <div class="lg:basis-[45%] lg:flex-shrink-0">
+          <div class="card card-shadow p-7">
+            <form
+              hx-post="/analyze"
+              hx-target="#report"
+              hx-swap="innerHTML"
+              hx-indicator="#progress-panel"
+              hx-disabled-elt="#submit-btn"
+            >
+              <div class="space-y-5">
+                <div>
+                  <label class="eyebrow block text-[var(--ink-soft)] mb-2">Your Brand</label>
+                  <input
+                    name="user_brand"
+                    required
+                    placeholder="e.g., BMW"
+                    class="field-input w-full"
+                  />
+                </div>
 
-              <div>
-                <label class="eyebrow block text-[var(--ink-soft)] mb-2">
-                  Competitors <span class="font-normal normal-case tracking-normal">(comma-separated, up to 10)</span>
+                <div>
+                  <label class="eyebrow block text-[var(--ink-soft)] mb-2">
+                    Competitors <span class="font-normal normal-case tracking-normal">(comma-separated, up to 10)</span>
+                  </label>
+                  <input
+                    name="competitors"
+                    required
+                    placeholder="Audi, AutoZone"
+                    class="field-input w-full"
+                  />
+                  <p class="text-xs text-[var(--ink-soft)] mt-1.5">
+                    {% if data_source == "bq_kaggle_transcripts" %}
+                    Works best with well-known consumer brands already in our dataset (e.g. BMW, Audi, AutoZone, 7up).
+                    {% else %}
+                    Any brand name works in demo mode.
+                    {% endif %}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="eyebrow block text-[var(--ink-soft)] mb-2">
+                    Industry hint <span class="font-normal normal-case tracking-normal">(optional)</span>
+                  </label>
+                  <input
+                    name="industry_hint"
+                    placeholder="e.g., DTC eyewear"
+                    class="field-input w-full"
+                  />
+                </div>
+
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" name="generate_creatives" checked class="w-5 h-5 accent-[var(--violet)]" />
+                  <span class="text-sm text-[var(--ink-soft)]">Generate 3 fresh ad creatives</span>
                 </label>
-                <input
-                  name="competitors"
-                  required
-                  placeholder="Audi, AutoZone"
-                  class="field-input w-full"
-                />
-                <p class="text-xs text-[var(--ink-soft)] mt-1.5">
-                  {% if data_source == "bq_kaggle_transcripts" %}
-                  Works best with well-known consumer brands already in our dataset (e.g. BMW, Audi, AutoZone, 7up).
-                  {% else %}
-                  Any brand name works in demo mode.
-                  {% endif %}
-                </p>
+
+                <button
+                  id="submit-btn"
+                  type="submit"
+                  class="submit-btn w-full py-3.5 rounded-lg font-bold flex items-center justify-center gap-2"
+                >
+                  <span class="btn-idle items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Analyze Competitors
+                  </span>
+                  <span class="btn-loading items-center gap-2">
+                    <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Working On It...
+                  </span>
+                </button>
               </div>
+            </form>
+          </div>
+        </div>
 
-              <div>
-                <label class="eyebrow block text-[var(--ink-soft)] mb-2">
-                  Industry hint <span class="font-normal normal-case tracking-normal">(optional)</span>
-                </label>
-                <input
-                  name="industry_hint"
-                  placeholder="e.g., DTC eyewear"
-                  class="field-input w-full"
-                />
-              </div>
-
-              <label class="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" name="generate_creatives" checked class="w-5 h-5 accent-[var(--violet)]" />
-                <span class="text-sm text-[var(--ink-soft)]">Generate 3 fresh ad creatives</span>
-              </label>
-
-              <button
-                id="submit-btn"
-                type="submit"
-                class="submit-btn w-full py-3.5 rounded-lg font-bold flex items-center justify-center gap-2"
-              >
-                <span class="btn-idle items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                  </svg>
-                  Analyze Competitors
-                </span>
-                <span class="btn-loading items-center gap-2">
-                  <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Working On It...
-                </span>
-              </button>
+        <!-- Right: analysis progress panel (desktop) / stacks below on mobile.
+             Hidden until an HTMX request is in flight; occupies its own
+             column instead of stretching the left card tall. -->
+        <div class="lg:basis-[55%] lg:min-w-0">
+          <!-- Idle placeholder: visible until the first analysis starts, so
+               the right column never reads as a broken empty void on first
+               load. Hidden by the same JS that reveals #progress-panel. -->
+          <div id="results-placeholder" class="card p-7 h-full flex flex-col items-center justify-center text-center min-h-[280px]">
+            <div class="w-10 h-10 rounded-full bg-[#f1e4e0] flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-[var(--violet)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2"/>
+              </svg>
             </div>
-          </form>
+            <p class="eyebrow text-[var(--ink-soft)] mb-1.5">Analysis progress</p>
+            <p class="text-sm text-[var(--ink-soft)] max-w-xs leading-relaxed">Your results and live pipeline status will appear here once you start an analysis.</p>
+          </div>
 
-          <!-- Fun animated progress overlay, shown only while HTMX request is in flight -->
-          <div id="progress-overlay" class="mt-6 pt-6 border-t border-[var(--line)]">
+          <div id="progress-panel" class="card card-shadow p-7">
+            <p class="eyebrow text-[var(--ink-soft)] mb-4">Analysis progress</p>
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 rounded-full bg-[#f1e4e0] flex items-center justify-center animate-pulse flex-shrink-0">
                 <svg class="w-4 h-4 text-[var(--violet)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,14 +347,11 @@
               </div>
             </div>
           </div>
+
+          <div id="report"></div>
         </div>
-      </div>
 
-      <!-- Right: report target -->
-      <div class="lg:col-span-8">
-        <div id="report"></div>
       </div>
-
     </div>
   </section>
 
@@ -356,14 +373,14 @@
   const STAGE_TIMINGS_MS = [0, 3000, 6000, 31000, 54000, 60000];
 
   function resetStages() {
-    document.querySelectorAll('#progress-overlay .stage').forEach((el) => {
+    document.querySelectorAll('#progress-panel .stage').forEach((el) => {
       el.classList.remove('stage-active', 'stage-done');
     });
   }
 
   function runStageTicker() {
     resetStages();
-    const stages = document.querySelectorAll('#progress-overlay .stage');
+    const stages = document.querySelectorAll('#progress-panel .stage');
     STAGE_TIMINGS_MS.forEach((delay, i) => {
       setTimeout(() => {
         stages.forEach((el, j) => {
@@ -377,12 +394,14 @@
   document.body.addEventListener('htmx:beforeRequest', (evt) => {
     if (evt.detail.elt.tagName === 'FORM') {
       runStageTicker();
+      const placeholder = document.getElementById('results-placeholder');
+      if (placeholder) placeholder.style.display = 'none';
     }
   });
 
   document.body.addEventListener('htmx:afterRequest', (evt) => {
     if (evt.detail.elt.tagName === 'FORM') {
-      document.querySelectorAll('#progress-overlay .stage').forEach((el) => {
+      document.querySelectorAll('#progress-panel .stage').forEach((el) => {
         el.classList.remove('stage-active');
         el.classList.add('stage-done');
       });
