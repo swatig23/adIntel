@@ -175,29 +175,46 @@ async def generate_from_multimodal(
 
 
 async def generate_image(prompt: str, output_path: Path) -> Path:
-    """Generate an image via Gemini Flash Image ('Nano Banana').
+    """Generate an image exclusively via Vertex AI (gemini-2.5-flash-image).
 
+    Always creates a dedicated Vertex AI client — never uses the shared
+    _get_client() which may resolve to AI Studio (generativelanguage.googleapis.com).
+    All calls go to aiplatform.googleapis.com via Application Default Credentials.
+
+    Requires GCP_PROJECT_ID set in config and `gcloud auth application-default login`.
     Writes PNG bytes to ``output_path`` and returns the path.
     """
     settings = get_settings()
-    client = _get_client()
+    if not settings.gcp_project_id:
+        raise RuntimeError(
+            "GCP_PROJECT_ID is required for image generation. "
+            "Set it in .env and run: gcloud auth application-default login"
+        )
+
+    vertex_client = genai.Client(
+        vertexai=True,
+        project=settings.gcp_project_id,
+        location=settings.gcp_location,
+    )
 
     def _call() -> bytes:
-        resp = client.models.generate_content(
+        resp = vertex_client.models.generate_content(
             model=settings.gemini_image_model,
             contents=prompt,
         )
-        # Walk candidates → parts → inline_data.data (bytes)
         for cand in resp.candidates or []:
             for part in getattr(cand.content, "parts", []) or []:
                 inline = getattr(part, "inline_data", None)
                 if inline and inline.data:
                     return inline.data
-        raise RuntimeError("Gemini did not return any image bytes")
+        raise RuntimeError("Vertex AI did not return any image bytes")
 
-    # Image generation on free tier is limit 0; attempt once without long retry loops
+    logger.info(
+        f"[generate_image] Vertex AI · project={settings.gcp_project_id} "
+        f"location={settings.gcp_location} model={settings.gemini_image_model}"
+    )
     data = await asyncio.to_thread(_call)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(data)
-    logger.info(f"Wrote generated image → {output_path}")
+    logger.info(f"[generate_image] wrote → {output_path}")
     return output_path

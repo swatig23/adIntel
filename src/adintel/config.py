@@ -49,7 +49,7 @@ class Settings(BaseSettings):
 
     # GCP / Firebase (optional in MVP)
     gcp_project_id: str = ""
-    gcp_location: str = "us-central1"
+    gcp_location: str = "global"
     firestore_collection: str = "adintel_analyses"
     firebase_storage_bucket: str = ""
 

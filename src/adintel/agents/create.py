@@ -4,14 +4,13 @@ patterns, using Gemini for copy + Nano Banana (Gemini 2.5 Flash Image) for image
 
 from __future__ import annotations
 
-import asyncio
 import json
 import re
 from pathlib import Path
 
 from loguru import logger
 
-from ..clients.gemini import generate_image, generate_text
+from ..clients.gemini import generate_text
 from ..models import GapItem, GeneratedCreative, Pattern
 
 COPY_SYSTEM = """You write direct-response ad copy that mimics proven winners
@@ -64,22 +63,14 @@ class CreateAgent:
         if not concepts:
             return []
 
-        # Generate images in parallel
-        results = await asyncio.gather(
-            *(self._render_image(brand, i, c) for i, c in enumerate(concepts)),
-            return_exceptions=True,
-        )
-
+        # Text concepts only — images are generated on-demand via Vertex AI
+        # when the user clicks "Generate AI Visual" on each card.
         creatives: list[GeneratedCreative] = []
-        for concept, path_or_err in zip(concepts, results):
-            if isinstance(path_or_err, Exception):
-                logger.warning(f"[CreateAgent] image failed: {path_or_err}")
-                continue
-            path: Path = path_or_err
+        for concept in concepts:
             creatives.append(
                 GeneratedCreative(
-                    filename=path.name,
-                    file_path=str(path),
+                    filename="",
+                    file_path="",
                     hook=concept["hook"],
                     body_copy=concept["body_copy"],
                     cta=concept["cta"],
@@ -87,7 +78,7 @@ class CreateAgent:
                     rationale=concept.get("rationale", ""),
                 )
             )
-        logger.info(f"[CreateAgent] produced {len(creatives)} creatives")
+        logger.info(f"[CreateAgent] produced {len(creatives)} text concepts (images on-demand)")
         return creatives
 
     async def _generate_concepts(
@@ -114,20 +105,6 @@ class CreateAgent:
         except json.JSONDecodeError as e:
             logger.error(f"[CreateAgent] bad JSON: {e}\n{raw[:400]}")
             return []
-
-    async def _render_image(self, brand: str, idx: int, concept: dict) -> Path:
-        out = self.output_dir / f"{brand.lower().replace(' ', '_')}_creative_{idx + 1}.png"
-        prompt = (
-            f"Advertising image for {brand}. "
-            f"{concept.get('image_prompt', '')} "
-            f"Professional product photography, high resolution, "
-            f"crisp lighting, brand-forward composition. No text or logos in the image."
-        )
-        try:
-            return await generate_image(prompt, out)
-        except Exception as e:
-            logger.info(f"[CreateAgent] API image gen unavailable ({e}); creating styled concept graphic")
-            return self._draw_fallback_card(brand, idx, concept, out)
 
     @staticmethod
     def _draw_fallback_card(brand: str, idx: int, concept: dict, output_path: Path) -> Path:
